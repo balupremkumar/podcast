@@ -1,0 +1,7 @@
+﻿
+torch==2.5.1+cpu
+torch-stoi==0.2.3
+torchaudio==2.5.1+cpu
+torchvision==0.20.1+cpu
+
+

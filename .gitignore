@@ -1,0 +1,29 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.env
+
+# Audio output (can be regenerated)
+output/
+
+# Logs
+*.log
+
+# External servers / cloned repos
+Chatterbox-TTS-Server/
+
+# Claude Code
+.claude/worktrees/
+
+# Graphify
+graphify-out/
+
+# OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
