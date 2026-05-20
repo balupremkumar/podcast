@@ -1,29 +1,58 @@
-# Python
+﻿# Python
 venv/
-.venv/
 __pycache__/
 *.pyc
 *.pyo
-.env
-*.env
+.Python
+*.egg-info/
+dist/
+build/
 
-# Audio output (can be regenerated)
-output/
+# Environment & secrets
+.env
+*.env.local
 
 # Logs
 *.log
 
-# External servers / cloned repos
-Chatterbox-TTS-Server/
+# Audio uploads & generated outputs
+output/
+outputs/
 
-# Claude Code
-.claude/worktrees/
+# Model cache (large binary files)
+model_cache/
+*.pt
+*.bin
+*.gguf
 
-# Graphify
-graphify-out/
+# Private recordings
+voice_samples/
 
 # OS
+.DS_Store
+Thumbs.db
+
+# IDE
 .vscode/
 .idea/
-Thumbs.db
-desktop.ini
+
+# Generated PDFs and private documents
+*.pdf
+generate_report.py
+
+# Private content examples
+scripts/
+
+# External TTS server (separate repo, not committed here)
+Chatterbox-TTS-Server/
+
+# Claude Code local settings
+.claude/
+
+# Graphify tool files
+.graphify_python
+.graphifyignore
+graphify-out/
+
+# Temp uploads
+tmp/

@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Architecture — Podcast Intelligence</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:      #0B1929;
+      --bg2:     #0F2236;
+      --bg3:     #142d45;
+      --teal:    #0A7EA4;
+      --sky:     #38BDF8;
+      --green:   #10B981;
+      --amber:   #F59E0B;
+      --red:     #EF4444;
+      --purple:  #A78BFA;
+      --t1: #E8F0F8;
+      --t2: #7A8FA8;
+      --t3: #3D5470;
+      --border: rgba(255,255,255,0.06);
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      background: var(--bg);
+      color: var(--t1);
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      padding: 48px 24px 80px;
+    }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--t3);
+    }
+
+    /* ── Node box ── */
+    .node {
+      border-radius: 10px;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      background: var(--bg2);
+    }
+    .node-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+    .node-sub   { font-size: 11px; color: var(--t2); line-height: 1.5; }
+    .node.local  { border-color: rgba(16,185,129,.2);  background: rgba(16,185,129,.04); }
+    .node.ext    { border-color: rgba(245,158,11,.2);  background: rgba(245,158,11,.04); }
+    .node.swap   { border-color: rgba(56,189,248,.2);  background: rgba(56,189,248,.04); }
+    .node.orch   { border-color: rgba(10,126,164,.3);  background: rgba(10,126,164,.06); }
+    .node.user   { border-color: var(--border);        background: var(--bg3); }
+
+    /* ── Zone container ── */
+    .zone {
+      border-radius: 14px;
+      border: 1px dashed;
+      padding: 16px;
+    }
+    .zone.local-zone { border-color: rgba(16,185,129,.22); background: rgba(16,185,129,.02); }
+    .zone.ext-zone   { border-color: rgba(245,158,11,.22); background: rgba(245,158,11,.02); }
+
+    /* ── Arrow ── */
+    .arr-v {
+      display: flex; justify-content: center; align-items: center;
+      height: 24px; color: var(--t3); font-size: 14px;
+    }
+    .arr-h {
+      display: flex; align-items: center;
+      padding: 0 4px; color: var(--t3); font-size: 14px;
+    }
+
+    /* ── Pipeline row ── */
+    .pipe-stage {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 4px; flex: 1;
+    }
+    .pipe-box {
+      width: 100%; padding: 10px 8px;
+      border-radius: 8px; text-align: center;
+      border: 1px solid var(--border);
+      background: var(--bg2);
+    }
+    .pipe-box.local  { border-color: rgba(16,185,129,.2); background: rgba(16,185,129,.04); }
+    .pipe-box.llm    { border-color: rgba(245,158,11,.2); background: rgba(245,158,11,.03); }
+    .pipe-box.star   { border-color: rgba(167,139,250,.25); background: rgba(167,139,250,.04); }
+    .pipe-box.out    { border-color: rgba(10,126,164,.3); background: rgba(10,126,164,.06); }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10px; font-weight: 600; padding: 2px 7px;
+      border-radius: 4px; letter-spacing: .04em;
+    }
+    .badge.local  { background: rgba(16,185,129,.1); color: #34D399; }
+    .badge.ext    { background: rgba(245,158,11,.12); color: var(--amber); }
+    .badge.swap   { background: rgba(56,189,248,.1); color: var(--sky); }
+    .badge.star   { background: rgba(167,139,250,.12); color: var(--purple); }
+    .badge.free   { background: rgba(255,255,255,.06); color: var(--t2); }
+
+    .dot { width: 6px; height: 6px; border-radius: 50%; }
+
+    h1 { font-size: 26px; font-weight: 800; letter-spacing: -.025em; }
+    h2 { font-size: 15px; font-weight: 700; letter-spacing: -.015em; margin-bottom: 14px; }
+
+    .section-wrap { max-width: 1040px; margin: 0 auto; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+    @media (max-width: 760px) { .two-col { grid-template-columns: 1fr; } }
+
+    .diff-row {
+      display: grid; grid-template-columns: 120px 1fr 1fr;
+      gap: 0; border-bottom: 1px solid var(--border);
+      font-size: 12.5px;
+    }
+    .diff-row:last-child { border-bottom: none; }
+    .diff-cell { padding: 10px 14px; }
+    .diff-cell:not(:last-child) { border-right: 1px solid var(--border); }
+    .diff-head { background: var(--bg3); font-size: 11px; font-weight: 700; letter-spacing: .06em; color: var(--t3); text-transform: uppercase; }
+    .diff-head.green { color: var(--green); }
+    .diff-head.amber { color: var(--amber); }
+  </style>
+</head>
+<body>
+<div class="section-wrap">
+
+  <!-- Title -->
+  <div style="margin-bottom:48px;">
+    <div class="label" style="margin-bottom:10px;">Podcast Intelligence Pipeline</div>
+    <h1>Architecture</h1>
+    <p style="font-size:13.5px;color:var(--t2);margin-top:8px;max-width:520px;line-height:1.65;">
+      Two deployment modes, one codebase. Switch between cloud-assisted and fully local
+      with a single environment variable.
+    </p>
+  </div>
+
+
+  <!-- ═══ TOP ROW: side-by-side architecture cards ═══ -->
+  <div class="two-col" style="margin-bottom:48px;">
+
+    <!-- LEFT: Current -->
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
+        <div class="dot" style="background:var(--amber);"></div>
+        <h2 style="margin:0;">Current — Cloud-assisted</h2>
+      </div>
+
+      <!-- User -->
+      <div class="node user" style="text-align:center;margin-bottom:4px;">
+        <div class="node-title">Browser UI</div>
+        <div class="node-sub mono">localhost:8000</div>
+      </div>
+      <div class="arr-v">↓</div>
+
+      <!-- Orchestrator -->
+      <div class="node orch" style="text-align:center;margin-bottom:4px;">
+        <div class="node-title">FastAPI + Thread Pool</div>
+        <div class="node-sub">Job queue · State management</div>
+      </div>
+      <div class="arr-v">↓</div>
+
+      <!-- Local zone -->
+      <div class="zone local-zone" style="margin-bottom:4px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
+          <div class="dot" style="background:var(--green);"></div>
+          <span class="label" style="color:var(--green);">Local — zero egress</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+          <div class="node local">
+            <div class="node-title" style="font-size:12px;">faster-whisper</div>
+            <div class="node-sub">Transcription<br/>CPU · base model</div>
+          </div>
+          <div class="node local">
+            <div class="node-title" style="font-size:12px;">pyannote.audio</div>
+            <div class="node-sub">Speaker ID<br/>VAD fallback</div>
+          </div>
+        </div>
+        <div class="node local">
+          <div class="node-title" style="font-size:12px;">Chatterbox TTS</div>
+          <div class="node-sub mono">localhost:8004 · Voice cloning · Cold open synthesis</div>
+        </div>
+      </div>
+
+      <div class="arr-v">↓</div>
+
+      <!-- External zone -->
+      <div class="zone ext-zone">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
+          <div class="dot" style="background:var(--amber);"></div>
+          <span class="label" style="color:var(--amber);">External — data leaves device</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="node ext">
+            <div class="node-title" style="font-size:12px;">Wikipedia API</div>
+            <div class="node-sub">Guest research<br/>Free · no key needed</div>
+          </div>
+          <div class="node ext">
+            <div class="node-title" style="font-size:12px;">Claude Sonnet</div>
+            <div class="node-sub">Show notes · Chapters<br/>Cold open · Quality<br/>~$0.02 / episode</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;display:flex;align-items:center;justify-content:flex-end;">
+        <span class="mono" style="font-size:10px;color:var(--t3);">LLM_PROVIDER=claude</span>
+      </div>
+    </div>
+
+
+    <!-- RIGHT: Fully Local -->
+    <div style="background:var(--bg2);border:1px solid rgba(16,185,129,.2);border-radius:16px;padding:24px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
+        <div class="dot" style="background:var(--green);"></div>
+        <h2 style="margin:0;">Fully Local — Air-gapped</h2>
+      </div>
+
+      <!-- User -->
+      <div class="node user" style="text-align:center;margin-bottom:4px;">
+        <div class="node-title">Browser UI</div>
+        <div class="node-sub mono">localhost:8000</div>
+      </div>
+      <div class="arr-v">↓</div>
+
+      <!-- Orchestrator -->
+      <div class="node orch" style="text-align:center;margin-bottom:4px;">
+        <div class="node-title">FastAPI + Thread Pool</div>
+        <div class="node-sub">Job queue · State management</div>
+      </div>
+      <div class="arr-v">↓</div>
+
+      <!-- All local zone -->
+      <div class="zone local-zone">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
+          <div class="dot" style="background:var(--green);"></div>
+          <span class="label" style="color:var(--green);">All local — zero egress</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+          <div class="node local">
+            <div class="node-title" style="font-size:12px;">faster-whisper</div>
+            <div class="node-sub">Transcription<br/>CPU · base model</div>
+          </div>
+          <div class="node local">
+            <div class="node-title" style="font-size:12px;">pyannote.audio</div>
+            <div class="node-sub">Speaker ID<br/>HF_TOKEN required</div>
+          </div>
+        </div>
+
+        <!-- LLM replacement — highlighted -->
+        <div class="node swap" style="margin-bottom:8px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+            <div>
+              <div class="node-title">LM Studio · Qwen2.5-14B-Instruct</div>
+              <div class="node-sub">Show notes · Chapters · Cold open · Quality scoring</div>
+            </div>
+            <div>
+              <div class="node-sub mono" style="color:var(--sky);">localhost:1234</div>
+              <div class="node-sub">Vulkan / CPU backend</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="node local">
+            <div class="node-title" style="font-size:12px;">Kiwix / Offline Wiki</div>
+            <div class="node-sub">Guest research<br/>~1 GB mini dump</div>
+          </div>
+          <div class="node local">
+            <div class="node-title" style="font-size:12px;">Chatterbox TTS</div>
+            <div class="node-sub mono">localhost:8004<br/>Voice synthesis</div>
+          </div>
+        </div>
+
+        <!-- Hardware note -->
+        <div style="margin-top:10px;padding:10px 12px;border-radius:8px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.05);">
+          <div class="label" style="margin-bottom:5px;">Minimum hardware</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 16px;font-size:11px;color:var(--t2);">
+            <div>GPU: RTX 3090 (24 GB)</div><div>RAM: 32 GB</div>
+            <div>LLM: ~8 GB VRAM (Q4)</div><div>TTS: ~4 GB VRAM</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Switch note -->
+      <div style="margin-top:14px;padding:10px 12px;border-radius:8px;background:rgba(56,189,248,.04);border:1px solid rgba(56,189,248,.12);">
+        <div class="label" style="color:var(--sky);margin-bottom:5px;">One change to switch</div>
+        <div class="mono" style="font-size:11px;color:var(--sky);">LLM_PROVIDER=local</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:3px;">Everything else is identical. ~70% shared codebase.</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══ PIPELINE FLOW ═══ -->
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:48px;">
+    <h2>Pipeline — Stage by Stage</h2>
+
+    <div style="display:flex;align-items:stretch;gap:0;overflow-x:auto;padding-bottom:4px;">
+
+      <!-- Audio in -->
+      <div class="pipe-stage" style="min-width:80px;max-width:100px;">
+        <div class="pipe-box out" style="padding:14px 8px;">
+          <div style="font-size:20px;margin-bottom:4px;">🎙</div>
+          <div style="font-size:11px;font-weight:600;">Audio In</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:2px;">MP3 WAV M4A</div>
+        </div>
+      </div>
+
+      <div class="arr-h">→</div>
+
+      <!-- Stage 1 -->
+      <div class="pipe-stage" style="min-width:90px;">
+        <div class="badge local" style="margin-bottom:5px;">Local</div>
+        <div class="pipe-box local">
+          <div style="font-size:10px;font-weight:700;color:var(--green);margin-bottom:3px;" class="mono">01</div>
+          <div style="font-size:11px;font-weight:600;">Transcribe</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:2px;">Whisper</div>
+        </div>
+      </div>
+
+      <div class="arr-h">→</div>
+
+      <!-- Stage 2 -->
+      <div class="pipe-stage" style="min-width:90px;">
+        <div class="badge local" style="margin-bottom:5px;">Local</div>
+        <div class="pipe-box local">
+          <div style="font-size:10px;font-weight:700;color:var(--green);margin-bottom:3px;" class="mono">02</div>
+          <div style="font-size:11px;font-weight:600;">Diarise</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:2px;">pyannote</div>
+        </div>
+      </div>
+
+      <div class="arr-h">→</div>
+
+      <!-- Stage 3 -->
+      <div class="pipe-stage" style="min-width:90px;">
+        <div class="badge free" style="margin-bottom:5px;">Optional</div>
+        <div class="pipe-box llm">
+          <div style="font-size:10px;font-weight:700;color:var(--amber);margin-bottom:3px;" class="mono">03</div>
+          <div style="font-size:11px;font-weight:600;">Research</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:2px;">Wikipedia</div>
+        </div>
+      </div>
+
+      <div class="arr-h">→</div>
+
+      <!-- Stage 4 -->
+      <div class="pipe-stage" style="min-width:90px;">
+        <div class="badge swap" style="margin-bottom:5px;">LLM</div>
+        <div class="pipe-box llm">
+          <div style="font-size:10px;font-weight:700;color:var(--amber);margin-bottom:3px;" class="mono">04</div>
+          <div style="font-size:11px;font-weight:600;">Show Notes</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:2px;">Title · Quotes</div>
+        </div>
+      </div>
+
+      <div class="arr-h">→</div>
+
+      <!-- Stage 5 -->
+      <div class="pipe-stage" style="min-width:90px;">
+        <div class="badge swap" style="margin-bottom:5px;">LLM</div>
+        <div class="pipe-box llm">
+          <div style="font-size:10px;font-weight:700;color:var(--amber);margin-bottom:3px;" class="mono">05</div>
+          <div style="font-size:11px;font-weight:600;">Chapters</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:2px;">Topic shifts</div>
+        </div>
+      </div>
+
+      <div class="arr-h">→</div>
+
+      <!-- Stage 6 -->
+      <div class="pipe-stage" style="min-width:90px;">
+        <div class="badge star" style="margin-bottom:5px;">★</div>
+        <div class="pipe-box star">
+          <div style="font-size:10px;font-weight:700;color:var(--purple);margin-bottom:3px;" class="mono">06</div>
+          <div style="font-size:11px;font-weight:600;">Cold Open</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:2px;">30s hook</div>
+        </div>
+      </div>
+
+      <div class="arr-h">→</div>
+
+      <!-- Stage 7 -->
+      <div class="pipe-stage" style="min-width:90px;">
+        <div class="badge star" style="margin-bottom:5px;">★</div>
+        <div class="pipe-box star">
+          <div style="font-size:10px;font-weight:700;color:var(--purple);margin-bottom:3px;" class="mono">07</div>
+          <div style="font-size:11px;font-weight:600;">Quality</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:2px;">Score + flags</div>
+        </div>
+      </div>
+
+      <div class="arr-h">→</div>
+
+      <!-- Output -->
+      <div class="pipe-stage" style="min-width:90px;max-width:110px;">
+        <div class="pipe-box out" style="padding:14px 8px;">
+          <div style="font-size:20px;margin-bottom:4px;">📋</div>
+          <div style="font-size:11px;font-weight:600;color:var(--sky);">Output</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:2px;">Notes+Audio</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Legend -->
+    <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:18px;padding-top:16px;border-top:1px solid var(--border);font-size:11.5px;color:var(--t2);">
+      <div style="display:flex;align-items:center;gap:6px;"><span class="badge local">Local</span> Always on-device</div>
+      <div style="display:flex;align-items:center;gap:6px;"><span class="badge swap">LLM</span> Cloud or local via env flag</div>
+      <div style="display:flex;align-items:center;gap:6px;"><span class="badge star">★</span> Unexpected features</div>
+      <div style="display:flex;align-items:center;gap:6px;"><span class="badge free">Optional</span> Skipped if no guest name</div>
+    </div>
+  </div>
+
+
+  <!-- ═══ COMPARISON TABLE ═══ -->
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:48px;">
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border);">
+      <h2 style="margin:0;">Current vs Fully Local — Key Differences</h2>
+    </div>
+
+    <!-- Header row -->
+    <div class="diff-row">
+      <div class="diff-cell diff-head">Dimension</div>
+      <div class="diff-cell diff-head amber">Current (Claude API)</div>
+      <div class="diff-cell diff-head green">Fully Local (LM Studio)</div>
+    </div>
+
+    <div class="diff-row">
+      <div class="diff-cell label">LLM</div>
+      <div class="diff-cell" style="color:var(--t1);">Anthropic Claude Sonnet<br/><span style="font-size:11px;color:var(--t2);">~$0.02/episode · reliable structured output</span></div>
+      <div class="diff-cell" style="color:var(--t1);">Qwen2.5-14B-Instruct<br/><span style="font-size:11px;color:var(--t2);">Free · may need retries on long transcripts</span></div>
+    </div>
+
+    <div class="diff-row">
+      <div class="diff-cell label">Guest research</div>
+      <div class="diff-cell" style="color:var(--t1);">Wikipedia REST API<br/><span style="font-size:11px;color:var(--t2);">Internet required · free</span></div>
+      <div class="diff-cell" style="color:var(--t1);">Kiwix offline dump<br/><span style="font-size:11px;color:var(--t2);">~1 GB download · no internet</span></div>
+    </div>
+
+    <div class="diff-row">
+      <div class="diff-cell label">Data egress</div>
+      <div class="diff-cell"><span style="color:var(--amber);">Transcript sent to Anthropic API</span></div>
+      <div class="diff-cell"><span style="color:var(--green);">Zero — nothing leaves the device</span></div>
+    </div>
+
+    <div class="diff-row">
+      <div class="diff-cell label">Compliance</div>
+      <div class="diff-cell" style="color:var(--t2);font-size:12.5px;">Requires DPA with Anthropic. PIA needed for health data.</div>
+      <div class="diff-cell" style="color:var(--t2);font-size:12.5px;">No PIA needed. Satisfies NZ HIPC air-gapped requirement.</div>
+    </div>
+
+    <div class="diff-row">
+      <div class="diff-cell label">Speed</div>
+      <div class="diff-cell" style="color:var(--t2);font-size:12.5px;">LLM calls: 3–8s each. Total: ~90s for 10-min episode.</div>
+      <div class="diff-cell" style="color:var(--t2);font-size:12.5px;">LLM calls: 20–60s each. Total: 5–12 min for same episode.</div>
+    </div>
+
+    <div class="diff-row">
+      <div class="diff-cell label">Config change</div>
+      <div class="diff-cell"><span class="mono" style="font-size:11px;color:var(--sky);">LLM_PROVIDER=claude</span></div>
+      <div class="diff-cell"><span class="mono" style="font-size:11px;color:var(--green);">LLM_PROVIDER=local</span></div>
+    </div>
+  </div>
+
+
+  <!-- ═══ HEALTH SECTOR NOTE ═══ -->
+  <div style="padding:20px 24px;border-radius:12px;border:1px solid rgba(56,189,248,.12);background:rgba(13,31,60,.6);">
+    <div style="display:flex;gap:14px;align-items:flex-start;">
+      <div style="flex-shrink:0;width:32px;height:32px;border-radius:8px;background:rgba(56,189,248,.08);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--sky);">NZ</div>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--sky);margin-bottom:5px;">Health Sector Context</div>
+        <p style="font-size:12.5px;color:var(--t2);line-height:1.7;">
+          Voice recordings processed by this pipeline are biometric PHI under the NZ Health Information Privacy Code 2020.
+          The fully local architecture eliminates external data sharing, satisfying HIPC's data sovereignty requirement without
+          a Privacy Impact Assessment. The <span class="mono" style="color:var(--green);font-size:11.5px;">LLM_PROVIDER</span> flag
+          is the single mechanism to switch between a convenient cloud-assisted mode (for general use) and a compliant air-gapped
+          mode (for health deployments). Same product. Same UI. Different egress profile.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <p style="text-align:center;font-size:11px;color:var(--t3);margin-top:36px;" class="mono">Podcast Intelligence · Architecture v2</p>
+
+</div>
+</body>
+</html>

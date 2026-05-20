@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Podcast Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --navy:      #0D1F3C;
+      --navy-mid:  #142847;
+      --navy-up:   #1A3358;
+      --teal:      #0A7EA4;
+      --teal-sky:  #38BDF8;
+      --off-white: #EEF2F7;
+      --t1: #EEF2F7;
+      --t2: #8B9BB4;
+      --t3: #4B5E7A;
+      --green:  #10B981;
+      --amber:  #F59E0B;
+      --red:    #EF4444;
+      --purple: #A78BFA;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--navy);
+      color: var(--t1);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+    /* ── EQ Animation ── */
+    .eq-bar {
+      width: 3px;
+      border-radius: 2px;
+      background: var(--teal);
+      animation: eq 1.4s ease-in-out infinite;
+      transform-origin: bottom;
+      flex-shrink: 0;
+    }
+    @keyframes eq {
+      0%,100% { transform: scaleY(0.2); opacity: 0.35; }
+      50%      { transform: scaleY(1);   opacity: 1; }
+    }
+    .eq-bar:nth-child(1)  { height:12px; animation-delay:0s; }
+    .eq-bar:nth-child(2)  { height:22px; animation-delay:.12s; }
+    .eq-bar:nth-child(3)  { height:32px; animation-delay:.06s; }
+    .eq-bar:nth-child(4)  { height:18px; animation-delay:.24s; }
+    .eq-bar:nth-child(5)  { height:36px; animation-delay:.18s; }
+    .eq-bar:nth-child(6)  { height:28px; animation-delay:.3s; }
+    .eq-bar:nth-child(7)  { height:14px; animation-delay:.09s; }
+    .eq-bar:nth-child(8)  { height:34px; animation-delay:.21s; }
+    .eq-bar:nth-child(9)  { height:20px; animation-delay:.15s; }
+    .eq-bar:nth-child(10) { height:30px; animation-delay:.03s; }
+    .eq-bar:nth-child(11) { height:16px; animation-delay:.27s; }
+    .eq-bar:nth-child(12) { height:26px; animation-delay:.33s; }
+
+    /* ── Drop zone ── */
+    .drop-zone {
+      border: 1px solid rgba(10,126,164,0.2);
+      border-radius: 16px;
+      transition: border-color .2s, background .2s;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .drop-zone:hover, .drop-zone.over {
+      border-color: rgba(10,126,164,0.55);
+      background: rgba(10,126,164,0.04);
+    }
+
+    /* ── Tab pills ── */
+    .tab-pill {
+      padding: 5px 14px;
+      border-radius: 100px;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--t3);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .15s;
+      border: 1px solid transparent;
+      background: none;
+    }
+    .tab-pill:hover { color: var(--t2); }
+    .tab-pill.active {
+      background: rgba(10,126,164,0.12);
+      border-color: rgba(10,126,164,0.28);
+      color: var(--teal-sky);
+    }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* ── Stage items ── */
+    .stage-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      transition: background .2s;
+    }
+    .stage-row.active { background: rgba(10,126,164,0.08); }
+
+    /* ── Pull quote ── */
+    .pull-quote {
+      position: relative;
+      padding: 20px 20px 16px 24px;
+      border-left: 2px solid rgba(10,126,164,0.35);
+      background: rgba(10,126,164,0.04);
+      border-radius: 0 8px 8px 0;
+    }
+    .pull-quote::before {
+      content: '\201C';
+      position: absolute;
+      top: -8px; left: 12px;
+      font-size: 56px;
+      color: rgba(10,126,164,0.25);
+      font-family: Georgia, serif;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    /* ── Script stage (cold open) ── */
+    .script-stage {
+      background: var(--navy-mid);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+    .script-stage::before {
+      content: '';
+      position: absolute;
+      top: -80px; left: 50%;
+      transform: translateX(-50%);
+      width: 340px; height: 220px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(10,126,164,0.14), transparent 68%);
+      pointer-events: none;
+    }
+
+    /* ── Flag cards ── */
+    .flag-card {
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      margin-bottom: 8px;
+    }
+    .flag-card.high   { border-left: 3px solid var(--red); }
+    .flag-card.medium { border-left: 3px solid var(--amber); }
+    .flag-card.low    { border-left: 3px solid var(--green); }
+
+    /* ── Transcript grid ── */
+    .tx-row {
+      display: grid;
+      grid-template-columns: 44px 100px 1fr;
+      gap: 10px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      align-items: baseline;
+    }
+    .tx-row:last-child { border-bottom: none; }
+
+    /* ── Chapter rows ── */
+    .ch-row {
+      display: grid;
+      grid-template-columns: 52px 1fr;
+      gap: 14px;
+      padding: 16px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      align-items: start;
+    }
+    .ch-row:last-child { border-bottom: none; }
+
+    /* ── Mono / timestamp ── */
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--teal);
+      letter-spacing: .04em;
+    }
+
+    /* ── Score bar ── */
+    .sbar { height: 3px; border-radius: 2px; transition: width 1s ease-out; }
+
+    /* ── Rec blink ── */
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.15} }
+    .blink { animation: blink 1s ease-in-out infinite; }
+
+    /* ── Progress track ── */
+    .progress-track { height: 2px; background: rgba(255,255,255,0.06); border-radius:1px; overflow:hidden; }
+    .progress-fill  { height:100%; background: linear-gradient(90deg, var(--teal), var(--teal-sky)); border-radius:1px; transition: width .5s ease-out; }
+
+    /* ── Fade up ── */
+    .fade-up { animation: fade-up .35s ease-out; }
+    @keyframes fade-up { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ── Speaker colours ── */
+    .spk0 { color: var(--teal-sky); }
+    .spk1 { color: var(--purple); }
+    .spk2 { color: #34D399; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════ HEADER ═══════════════════════════ -->
+<header style="border-bottom:1px solid rgba(255,255,255,0.05);padding:0 24px;position:sticky;top:0;background:var(--navy);z-index:20;backdrop-filter:blur(10px);">
+  <div style="max-width:800px;margin:0 auto;height:50px;display:flex;align-items:center;justify-content:space-between;">
+
+    <!-- Wordmark -->
+    <div style="display:flex;align-items:center;gap:9px;">
+      <div style="display:flex;align-items:flex-end;gap:2px;height:16px;">
+        <div style="width:2.5px;height:7px; background:var(--teal);border-radius:2px;"></div>
+        <div style="width:2.5px;height:13px;background:var(--teal);border-radius:2px;"></div>
+        <div style="width:2.5px;height:16px;background:var(--teal);border-radius:2px;"></div>
+        <div style="width:2.5px;height:11px;background:var(--teal);border-radius:2px;"></div>
+        <div style="width:2.5px;height:14px;background:var(--teal);border-radius:2px;"></div>
+      </div>
+      <span style="font-size:13.5px;font-weight:700;letter-spacing:-.02em;color:var(--t1);">Podcast Intelligence</span>
+    </div>
+
+    <!-- Local badge -->
+    <div style="display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;border:1px solid rgba(16,185,129,.25);background:rgba(16,185,129,.05);">
+      <div style="width:5px;height:5px;border-radius:50%;background:var(--green);"></div>
+      <span style="font-size:10.5px;color:#34D399;font-weight:600;letter-spacing:.05em;">LOCAL</span>
+    </div>
+  </div>
+</header>
+
+
+<!-- ════════════════════════════ UPLOAD ══════════════════════════ -->
+<section id="s-upload" style="min-height:calc(100vh - 50px);display:flex;align-items:center;justify-content:center;padding:48px 24px;">
+  <div style="width:100%;max-width:520px;">
+
+    <div style="text-align:center;margin-bottom:36px;">
+      <h1 style="font-size:clamp(26px,5vw,40px);font-weight:900;letter-spacing:-.035em;line-height:1.08;color:var(--t1);margin-bottom:12px;">
+        What happened in<br/>this episode?
+      </h1>
+      <p style="font-size:13.5px;color:var(--t2);line-height:1.65;">
+        Seven AI stages. Transcription, speaker ID, show notes,<br/>chapters, cold open, and quality scoring.
+      </p>
+    </div>
+
+    <!-- Drop zone -->
+    <div id="dz" class="drop-zone" style="padding:44px 28px;text-align:center;">
+
+      <!-- Wave decoration -->
+      <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:.025;pointer-events:none;" viewBox="0 0 520 180" preserveAspectRatio="none">
+        <polyline fill="none" stroke="white" stroke-width="1.5"
+          points="0,90 25,68 50,105 75,48 100,108 125,58 150,94 175,42 200,102 225,72 250,90 275,52 300,98 325,38 350,92 375,66 400,88 425,44 450,104 475,70 500,86 520,90"/>
+      </svg>
+
+      <input id="fi" type="file" accept="audio/*" style="display:none;" />
+
+      <div id="dz-idle">
+        <svg style="width:36px;height:36px;color:var(--t3);margin:0 auto 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+        </svg>
+        <p style="font-weight:600;font-size:14.5px;margin-bottom:5px;">Drop your audio here</p>
+        <p style="font-size:12px;color:var(--t3);margin-bottom:18px;">MP3 · WAV · M4A · any length</p>
+        <button onclick="document.getElementById('fi').click()"
+          style="padding:7px 18px;background:rgba(10,126,164,.14);border:1px solid rgba(10,126,164,.32);border-radius:8px;color:var(--teal-sky);font-size:12.5px;font-weight:500;cursor:pointer;">
+          Browse files
+        </button>
+      </div>
+
+      <div id="dz-sel" style="display:none;">
+        <div style="width:38px;height:38px;border-radius:50%;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">
+          <svg style="width:16px;height:16px;color:var(--green);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <p id="dz-name" style="font-weight:600;font-size:14.5px;margin-bottom:3px;"></p>
+        <p id="dz-size" style="font-size:11.5px;color:var(--t3);"></p>
+      </div>
+    </div>
+
+    <!-- Guest name -->
+    <div style="margin-top:14px;">
+      <label style="font-size:10.5px;color:var(--t3);letter-spacing:.07em;font-weight:600;display:block;margin-bottom:6px;">
+        GUEST NAME <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional · triggers research stage)</span>
+      </label>
+      <input id="guest" type="text" placeholder="e.g. Lex Fridman"
+        style="width:100%;padding:10px 13px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:8px;color:var(--t1);font-size:13.5px;font-family:inherit;outline:none;transition:border-color .2s;"
+        onfocus="this.style.borderColor='rgba(10,126,164,.45)'"
+        onblur="this.style.borderColor='rgba(255,255,255,.08)'" />
+    </div>
+
+    <button id="run-btn" disabled onclick="go()"
+      style="width:100%;margin-top:14px;padding:13px;background:var(--teal);border:none;border-radius:10px;color:#fff;font-size:14.5px;font-weight:700;cursor:pointer;letter-spacing:-.01em;opacity:.25;transition:opacity .2s;font-family:inherit;">
+      Analyse episode →
+    </button>
+
+  </div>
+</section>
+
+
+<!-- ════════════════════════════ PROCESSING ══════════════════════ -->
+<section id="s-proc" style="display:none;min-height:calc(100vh - 50px);align-items:center;justify-content:center;padding:48px 24px;">
+  <div style="width:100%;max-width:480px;text-align:center;">
+
+    <div style="display:flex;align-items:flex-end;justify-content:center;gap:3px;height:44px;margin-bottom:30px;">
+      <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+      <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+      <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+      <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+    </div>
+
+    <div id="p-label" style="font-size:20px;font-weight:800;letter-spacing:-.025em;margin-bottom:5px;">Starting…</div>
+    <div id="p-file"  style="font-size:12px;color:var(--t3);margin-bottom:28px;font-family:'JetBrains Mono',monospace;"></div>
+
+    <div class="progress-track" style="margin-bottom:22px;">
+      <div id="p-bar" class="progress-fill" style="width:0%;"></div>
+    </div>
+
+    <div id="p-stages" style="text-align:left;"></div>
+
+  </div>
+</section>
+
+
+<!-- ════════════════════════════ RESULTS ════════════════════════ -->
+<section id="s-res" style="display:none;min-height:calc(100vh - 50px);padding-bottom:80px;">
+
+  <!-- Sticky results header -->
+  <div style="border-bottom:1px solid rgba(255,255,255,.05);padding:18px 24px;position:sticky;top:50px;background:var(--navy);z-index:10;backdrop-filter:blur(10px);">
+    <div style="max-width:760px;margin:0 auto;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
+        <div style="flex:1;min-width:0;">
+          <h2 id="r-title" style="font-size:18px;font-weight:800;letter-spacing:-.025em;line-height:1.2;margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></h2>
+          <div id="r-meta" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;"></div>
+        </div>
+        <button onclick="reset()"
+          style="padding:6px 12px;border:1px solid rgba(255,255,255,.09);border-radius:7px;background:none;color:var(--t3);font-size:11.5px;cursor:pointer;flex-shrink:0;font-family:inherit;">
+          ← New episode
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <div style="display:flex;gap:3px;overflow-x:auto;">
+        <button class="tab-pill active" onclick="tab('show-notes',this)">Show Notes</button>
+        <button class="tab-pill" onclick="tab('chapters',this)">Chapters</button>
+        <button class="tab-pill" onclick="tab('cold-open',this)">Cold Open</button>
+        <button class="tab-pill" onclick="tab('quality',this)">Quality</button>
+        <button class="tab-pill" onclick="tab('transcript',this)">Transcript</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panes -->
+  <div style="max-width:760px;margin:0 auto;padding:0 24px;">
+    <div id="tab-show-notes" class="tab-pane active" style="padding-top:34px;"><div id="sn"></div></div>
+    <div id="tab-chapters"   class="tab-pane"        style="padding-top:34px;"><div id="ch"></div></div>
+    <div id="tab-cold-open"  class="tab-pane"        style="padding-top:34px;"><div id="co"></div></div>
+    <div id="tab-quality"    class="tab-pane"        style="padding-top:34px;"><div id="qs"></div></div>
+    <div id="tab-transcript" class="tab-pane"        style="padding-top:34px;"><div id="tx"></div></div>
+  </div>
+
+</section>
+
+
+<!-- ════════════════════════════ SCRIPT ═════════════════════════ -->
+<script>
+
+const STEP_LABELS = {
+  transcribing:           'Transcribing audio',
+  diarising:              'Identifying speakers',
+  researching_guest:      'Researching guest',
+  generating_show_notes:  'Generating show notes',
+  detecting_chapters:     'Detecting chapters',
+  writing_cold_open:      'Writing cold open',
+  scoring_quality:        'Scoring quality',
+};
+const STEP_DESC = {
+  transcribing:          'Converting speech to text with word-level timestamps',
+  diarising:             'Separating who said what throughout the episode',
+  researching_guest:     'Pulling background context on your guest',
+  generating_show_notes: 'Structuring key moments, themes and quotable lines',
+  detecting_chapters:    'Finding topic shifts for chapter navigation',
+  writing_cold_open:     'Writing a 30-second spoken hook from the best moment',
+  scoring_quality:       'Rating information density, pacing and clarity',
+};
+
+let _file = null, _jobId = null, _timer = null, _coText = '';
+
+// ─ File ────────────────────────────────────────────────────────
+const dz = document.getElementById('dz');
+const fi = document.getElementById('fi');
+dz.addEventListener('click', () => fi.click());
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('over'); if(e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]); });
+fi.addEventListener('change', () => { if(fi.files[0]) setFile(fi.files[0]); });
+
+function setFile(f) {
+  _file = f;
+  document.getElementById('dz-idle').style.display = 'none';
+  document.getElementById('dz-sel').style.display  = 'block';
+  document.getElementById('dz-name').textContent   = f.name;
+  document.getElementById('dz-size').textContent   = (f.size/1024/1024).toFixed(1)+' MB';
+  const btn = document.getElementById('run-btn');
+  btn.disabled = false;
+  btn.style.opacity = '1';
+}
+
+// ─ Go ──────────────────────────────────────────────────────────
+async function go() {
+  if (!_file) return;
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true; btn.style.opacity = '.4'; btn.textContent = 'Uploading…';
+
+  const fd = new FormData();
+  fd.append('audio', _file);
+  const g = document.getElementById('guest').value.trim();
+  if (g) fd.append('guest_name', g);
+
+  try {
+    const r = await fetch('/api/process', { method:'POST', body:fd });
+    if (!r.ok) { const e=await r.json(); alert('Upload failed: '+e.detail); _resetBtn(); return; }
+    const d = await r.json();
+    _jobId = d.job_id;
+    document.getElementById('p-file').textContent = _file.name;
+    _show('proc');
+    _timer = setInterval(_poll, 2000);
+  } catch(e) { alert('Network error: '+e.message); _resetBtn(); }
+}
+
+function _resetBtn() {
+  const b = document.getElementById('run-btn');
+  b.disabled = false; b.style.opacity = '1'; b.textContent = 'Analyse episode →';
+}
+
+// ─ Poll ────────────────────────────────────────────────────────
+async function _poll() {
+  if (!_jobId) return;
+  try {
+    const r = await fetch('/api/jobs/'+_jobId);
+    const j = await r.json();
+    _updateProc(j);
+    if (j.status==='done')   { clearInterval(_timer); _showResults(j.results); }
+    if (j.status==='failed') { clearInterval(_timer); alert('Pipeline failed:\n'+j.error); _show('upload'); _resetBtn(); }
+  } catch(e) { console.error(e); }
+}
+
+// ─ Processing UI ───────────────────────────────────────────────
+function _updateProc(j) {
+  document.getElementById('p-label').textContent = STEP_LABELS[j.current_step] || (j.status==='done'?'Complete':'Processing…');
+  document.getElementById('p-bar').style.width   = (j.progress_pct||0)+'%';
+
+  document.getElementById('p-stages').innerHTML = Object.entries(STEP_LABELS).map(([k,lbl]) => {
+    const done   = j.steps_completed.includes(k);
+    const active = j.current_step === k;
+    return `<div class="stage-row ${done?'done':active?'active':'pending'}" style="${done?'opacity:.4':''}">
+      <div style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">
+        ${done
+          ? `<svg style="width:13px;height:13px;color:var(--green);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>`
+          : active
+          ? `<div style="width:7px;height:7px;border-radius:50%;background:var(--teal);" class="blink"></div>`
+          : `<div style="width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.12);"></div>`
+        }
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:${active?600:400};color:${active?'var(--t1)':'var(--t2)'};">${lbl}</div>
+        ${active ? `<div style="font-size:11px;color:var(--t3);margin-top:2px;">${STEP_DESC[k]||''}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─ Sections ────────────────────────────────────────────────────
+function _show(name) {
+  document.getElementById('s-upload').style.display = name==='upload'  ? 'flex'  : 'none';
+  document.getElementById('s-proc').style.display   = name==='proc'   ? 'flex'  : 'none';
+  document.getElementById('s-res').style.display    = name==='res'    ? 'block' : 'none';
+}
+
+function reset() {
+  clearInterval(_timer);
+  _file = null; _jobId = null;
+  fi.value = '';
+  document.getElementById('dz-idle').style.display = 'block';
+  document.getElementById('dz-sel').style.display  = 'none';
+  const b = document.getElementById('run-btn');
+  b.disabled = true; b.style.opacity = '.25'; b.textContent = 'Analyse episode →';
+  _show('upload');
+}
+
+// ─ Tabs ────────────────────────────────────────────────────────
+function tab(name, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-pill').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ─ Results ─────────────────────────────────────────────────────
+function _showResults(r) {
+  _show('res');
+  document.getElementById('s-res').classList.add('fade-up');
+
+  const sn  = r.show_notes || {};
+  const dur = r.transcription?.duration;
+  const spk = r.transcript?.speaker_count;
+  const lng = r.transcription?.language;
+
+  document.getElementById('r-title').textContent = sn.title || 'Episode Analysis';
+
+  const chips = [];
+  if (dur) chips.push(_chip(Math.round(dur/60)+' min'));
+  if (spk) chips.push(_chip(spk+' speaker'+(spk!==1?'s':'')));
+  if (lng) chips.push(_chip(lng.toUpperCase()));
+  document.getElementById('r-meta').innerHTML = chips.join('');
+
+  _renderSN(sn, r.guest_research);
+  _renderCH(r.chapters||[]);
+  _renderCO(r.cold_open||{});
+  _renderQS(r.quality_score||{});
+  _renderTX(r.transcript||{});
+}
+
+function _chip(t) {
+  return `<span style="font-size:11px;color:var(--t3);padding:2px 7px;border-radius:4px;background:rgba(255,255,255,.05);font-family:'JetBrains Mono',monospace;">${t}</span>`;
+}
+
+// ─ Show Notes ──────────────────────────────────────────────────
+function _renderSN(sn, guest) {
+  const el = document.getElementById('sn');
+  if (!sn.title) { el.innerHTML = _empty('No show notes generated.'); return; }
+
+  const themes = (sn.key_themes||[]).map(t =>
+    `<span style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 9px;border-radius:4px;background:rgba(10,126,164,.09);color:var(--teal);border:1px solid rgba(10,126,164,.2);">${t}</span>`
+  ).join('');
+
+  const guestHtml = (guest?.found)
+    ? `<div style="padding:14px 16px;border-radius:9px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);margin-bottom:28px;">
+        <div style="font-size:10px;letter-spacing:.08em;color:var(--teal);font-weight:700;margin-bottom:5px;">GUEST CONTEXT</div>
+        <p style="font-size:13px;color:var(--t2);line-height:1.68;">${guest.summary}</p>
+      </div>` : '';
+
+  const moments = (sn.notable_moments||[]).map(m =>
+    `<div style="display:grid;grid-template-columns:50px 1fr;gap:10px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.04);">
+      <span class="mono">${m.timestamp}</span>
+      <span style="font-size:13.5px;color:var(--t2);line-height:1.58;">${m.description}</span>
+    </div>`
+  ).join('');
+
+  const quotes = (sn.quotable_moments||[]).map(q =>
+    `<div class="pull-quote" style="margin:14px 0;border-radius:0 8px 8px 0;">
+      <p style="font-size:15.5px;color:var(--t1);line-height:1.7;font-style:italic;margin-bottom:9px;padding-top:6px;">${q.quote}</p>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="mono">${q.timestamp}</span>
+        <span style="font-size:11.5px;color:var(--t3);">${q.context}</span>
+      </div>
+    </div>`
+  ).join('');
+
+  el.innerHTML = `
+    ${guestHtml}
+    <p style="font-size:15.5px;color:var(--t2);line-height:1.78;margin-bottom:22px;">${sn.description||''}</p>
+    ${themes ? `<div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:28px;">${themes}</div>` : ''}
+    ${moments ? `<div style="margin-bottom:28px;">
+      <div style="font-size:10px;letter-spacing:.08em;color:var(--t3);font-weight:700;margin-bottom:10px;">NOTABLE MOMENTS</div>
+      ${moments}
+    </div>` : ''}
+    ${quotes ? `<div>
+      <div style="font-size:10px;letter-spacing:.08em;color:var(--t3);font-weight:700;margin-bottom:10px;">QUOTABLE</div>
+      ${quotes}
+    </div>` : ''}
+  `;
+}
+
+// ─ Chapters ────────────────────────────────────────────────────
+function _renderCH(chs) {
+  const el = document.getElementById('ch');
+  if (!chs.length) { el.innerHTML = _empty('No chapters detected.'); return; }
+  el.innerHTML = chs.map((c,i) => `
+    <div class="ch-row">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
+        <div style="width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t3);font-family:'JetBrains Mono',monospace;">${String(i+1).padStart(2,'0')}</div>
+        <span class="mono" style="font-size:10px;">${c.timestamp_display}</span>
+      </div>
+      <div>
+        <p style="font-weight:600;font-size:14.5px;letter-spacing:-.01em;margin-bottom:4px;">${c.title}</p>
+        <p style="font-size:12.5px;color:var(--t3);line-height:1.6;">${c.summary}</p>
+      </div>
+    </div>`).join('');
+}
+
+// ─ Cold Open ───────────────────────────────────────────────────
+function _renderCO(co) {
+  const el = document.getElementById('co');
+  if (!co.cold_open) { el.innerHTML = _empty('No cold open generated.'); return; }
+  _coText = co.cold_open;
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div style="font-size:10px;letter-spacing:.08em;color:var(--t3);font-weight:700;margin-bottom:3px;">COLD OPEN SCRIPT</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:12px;color:var(--t3);">${co.estimated_words||'~75'} words · ~30 sec</span>
+          ${co.hook_moment?`<span class="mono">Hook at ${co.hook_moment}</span>`:''}
+        </div>
+      </div>
+    </div>
+
+    <div class="script-stage" style="padding:38px 32px;margin-bottom:18px;">
+      <p style="font-size:18px;line-height:1.82;color:var(--t1);position:relative;z-index:1;letter-spacing:-.01em;">&#8220;${co.cold_open}&#8221;</p>
+    </div>
+
+    <div id="co-synth">
+      <button onclick="_synthCO()"
+        style="display:inline-flex;align-items:center;gap:7px;padding:9px 16px;background:rgba(10,126,164,.12);border:1px solid rgba(10,126,164,.28);border-radius:8px;color:var(--teal-sky);font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit;transition:opacity .15s;">
+        <svg style="width:13px;height:13px;" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"/>
+        </svg>
+        Hear it in AI voice
+      </button>
+      <p style="font-size:11px;color:var(--t3);margin-top:7px;">Requires Chatterbox TTS server running on port 8004</p>
+      <audio id="co-audio" style="display:none;width:100%;margin-top:12px;" controls></audio>
+    </div>
+  `;
+}
+
+async function _synthCO() {
+  const btn = document.querySelector('#co-synth button');
+  if (!btn) return;
+  btn.style.opacity = '.4'; btn.textContent = 'Synthesising…';
+  try {
+    const r = await fetch('/api/synthesize', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({text:_coText}) });
+    if (!r.ok) { const e=await r.json(); alert(e.detail); btn.style.opacity='1'; btn.innerHTML='Hear it in AI voice'; return; }
+    const blob = await r.blob();
+    const aud = document.getElementById('co-audio');
+    aud.src = URL.createObjectURL(blob);
+    aud.style.display = 'block';
+    aud.play();
+    btn.style.display = 'none';
+  } catch(e) { alert(e.message); btn.style.opacity='1'; }
+}
+
+// ─ Quality ─────────────────────────────────────────────────────
+function _renderQS(qs) {
+  const el = document.getElementById('qs');
+  if (!qs.scores) { el.innerHTML = _empty('No quality score generated.'); return; }
+
+  const col = s => s>=8?'var(--green)':s>=6?'var(--teal-sky)':s>=4?'var(--amber)':'var(--red)';
+  const LABS = { information_density:'Information Density', pacing:'Pacing', clarity:'Clarity', memorable_moments:'Memorable Moments' };
+
+  const bars = Object.entries(qs.scores||{}).map(([k,v]) => `
+    <div style="margin-bottom:15px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+        <span style="font-size:13px;color:var(--t2);">${LABS[k]||k}</span>
+        <span style="font-size:13px;font-weight:700;color:${col(v)};font-family:'JetBrains Mono',monospace;">${v}</span>
+      </div>
+      <div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;">
+        <div class="sbar" style="width:${v*10}%;background:${col(v)};"></div>
+      </div>
+    </div>`).join('');
+
+  const flags = (qs.flags||[]).map(f => `
+    <div class="flag-card ${f.severity}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <span class="mono">${f.timestamp}</span>
+        ${f.duration_seconds?`<span style="font-size:10.5px;color:var(--t3);">${f.duration_seconds}s</span>`:''}
+        <span style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:${f.severity==='high'?'var(--red)':f.severity==='medium'?'var(--amber)':'var(--green)'};">${f.severity}</span>
+      </div>
+      <p style="font-size:13px;color:var(--t2);${f.suggestion?'margin-bottom:3px;':''}">${f.issue}</p>
+      ${f.suggestion?`<p style="font-size:11.5px;color:var(--t3);font-style:italic;">→ ${f.suggestion}</p>`:''}
+    </div>`).join('');
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:18px;margin-bottom:32px;padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.06);">
+      <div style="font-size:68px;font-weight:900;letter-spacing:-.04em;line-height:1;color:${col(qs.overall||0)};">${qs.overall||'—'}</div>
+      <div>
+        <div style="font-size:12px;color:var(--t3);margin-bottom:2px;">Overall / 10</div>
+        ${qs.top_strength?`<p style="font-size:12px;color:var(--green);margin-top:7px;line-height:1.5;">↑ ${qs.top_strength}</p>`:''}
+        ${qs.top_improvement?`<p style="font-size:12px;color:var(--amber);margin-top:4px;line-height:1.5;">↗ ${qs.top_improvement}</p>`:''}
+      </div>
+    </div>
+    <div style="margin-bottom:28px;">${bars}</div>
+    ${flags?`<div>
+      <div style="font-size:10px;letter-spacing:.08em;color:var(--t3);font-weight:700;margin-bottom:10px;">FLAGGED SEGMENTS</div>
+      ${flags}
+    </div>`:''}
+  `;
+}
+
+// ─ Transcript ──────────────────────────────────────────────────
+function _renderTX(t) {
+  const el = document.getElementById('tx');
+  const lines = t.lines||[];
+  if (!lines.length) { el.innerHTML = _empty('No transcript available.'); return; }
+
+  const spkMap = {}; let ci = 0;
+  const spkCls = ['spk0','spk1','spk2'];
+
+  el.innerHTML = lines.map(l => {
+    if (!spkMap[l.speaker]) spkMap[l.speaker] = spkCls[ci++ % spkCls.length];
+    return `<div class="tx-row">
+      <span class="mono">${l.timestamp}</span>
+      <span class="${spkMap[l.speaker]}" style="font-size:10.5px;font-weight:600;font-family:'JetBrains Mono',monospace;letter-spacing:.03em;">${l.speaker}</span>
+      <span style="font-size:13.5px;color:var(--t2);line-height:1.62;">${l.text}</span>
+    </div>`;
+  }).join('');
+}
+
+function _empty(msg) {
+  return `<p style="font-size:13px;color:var(--t3);padding:20px 0;">${msg}</p>`;
+}
+
+</script>
+</body>
+</html>

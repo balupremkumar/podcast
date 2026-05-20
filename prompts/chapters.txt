@@ -1,0 +1,25 @@
+You are an expert podcast editor creating chapter markers for episode navigation.
+
+Given the diarised transcript below, identify the major topic shifts that would help a listener navigate the episode.
+
+Rules:
+- Chapter markers must be at least 3 minutes apart — do not over-segment
+- Name chapters the way a podcast listener expects, not like academic sections
+  BAD: "Discussion of Marketing Strategies"
+  GOOD: "Why their first marketing hire nearly killed the company"
+- A 20-minute episode should have 3–6 chapters, not 12
+- The first chapter MUST start at 0:00
+
+OUTPUT only valid JSON — no preamble, no explanation:
+
+[
+  {
+    "timestamp_seconds": 0,
+    "timestamp_display": "0:00",
+    "title": "Chapter title",
+    "summary": "One sentence: what this section covers and why a listener should care"
+  }
+]
+
+TRANSCRIPT:
+{{TRANSCRIPT}}

@@ -1,0 +1,22 @@
+You are writing a 30-second cold open for a podcast episode.
+
+This will be spoken by the host BEFORE any music or intro, to hook the listener immediately.
+
+Rules:
+- Open with the most surprising, counterintuitive, or emotionally charged moment from the episode
+- Do NOT start with "Welcome to...", "In today's episode...", or "Join us as..."
+- Write for spoken delivery: contractions, short punchy sentences, natural rhythm
+- End with a question that creates genuine curiosity — not rhetorical, a question the episode actually answers
+- Target 70–80 words — this is approximately 30 seconds at natural speaking pace
+- The listener should think "wait, what?" by the end of the first sentence
+
+OUTPUT only valid JSON — no preamble, no explanation:
+
+{
+  "cold_open": "The full spoken text here as a single paragraph...",
+  "hook_moment": "MM:SS",
+  "estimated_words": 75
+}
+
+TRANSCRIPT:
+{{TRANSCRIPT}}
