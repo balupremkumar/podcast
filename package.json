@@ -1,0 +1,24 @@
+{
+  "name": "podcast",
+  "version": "1.0.0",
+  "description": "An AI backend that transforms raw podcast audio into structured content intelligence. Upload any audio file and receive a full pipeline output: speaker-diarised transcript, AI-generated show notes with timestamps and quotable moments, chapter markers, a ready-to-use cold open script, and a per-segment episode quality score — all processed locally, no data sent to external servers unless you opt in.",
+  "main": "gen_doc.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/balupremkumar/podcast.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/balupremkumar/podcast/issues"
+  },
+  "homepage": "https://github.com/balupremkumar/podcast#readme",
+  "dependencies": {
+    "docx": "^9.6.1"
+  }
+}

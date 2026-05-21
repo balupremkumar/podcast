@@ -53,6 +53,12 @@ Chatterbox-TTS-Server/
 .graphify_python
 .graphifyignore
 graphify-out/
+.graphify_*.json
+.graphify_*.py
+.graphify_*.txt
+
+# Node
+node_modules/
 
 # Temp uploads
 tmp/
