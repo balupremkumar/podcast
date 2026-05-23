@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compliance — Podcast Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/shared.css">
+</head>
+<body>
+
+<nav class="topnav" data-screen-label="01 Nav">
+  <div class="nav-inner">
+    <a href="/" class="logo">
+      <div class="eq-bars"><span></span><span></span><span></span><span></span><span></span></div>
+      <span>Podcast Intelligence</span>
+    </a>
+    <div class="nav-links">
+      <a href="/#how">How it works</a>
+      <a href="/features">Features</a>
+      <a href="/compliance" style="color: var(--off-white);">Compliance</a>
+      <span class="nav-status"><span class="dot"></span>LOCAL</span>
+      <a href="/app" class="btn btn-primary">Open Studio →</a>
+    </div>
+  </div>
+</nav>
+
+<section class="page-header" data-screen-label="02 Page header">
+  <div class="container">
+    <span class="eyebrow eyebrow-muted">COMPLIANCE · DATA SOVEREIGNTY</span>
+    <h1 style="margin-top: 16px; max-width: 900px;">No audio leaves your network. <span style="color: var(--teal-sky);">Ever.</span></h1>
+    <p style="font-size: 18px; max-width: 720px; margin-top: 22px;">This isn't a privacy policy. It's an architecture decision.</p>
+  </div>
+</section>
+
+<!-- Section 1: Problem with cloud -->
+<section class="compliance-block" data-screen-label="03 Problem with cloud">
+  <div class="container">
+    <div class="cb-grid">
+      <div class="cb-left">
+        <span class="eyebrow">SECTION 01</span>
+        <h2 style="margin-top: 14px;">Why every other option is off the table.</h2>
+      </div>
+      <div class="cb-right">
+        <p>The best audio tools in the world — ElevenLabs for voice, Descript for editing, Adobe Podcast for enhancement — all have the same architecture: your audio goes to their servers, gets processed, and the result comes back to you.</p>
+        <p>That's fine for most use cases. For health, government, legal, and any organisation handling sensitive communications, it creates an immediate compliance problem. The audio you're uploading isn't just a recording — it's operational content that may contain patient references, staff names, financial information, or material covered by professional privilege.</p>
+        <p style="color: var(--off-white); font-weight: 500;">Most organisations don't discover this is a problem until someone asks where the audio went.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Section 2: How this is different + diagram -->
+<section class="compliance-block alt" data-screen-label="04 How different">
+  <div class="container">
+    <div class="cb-grid">
+      <div class="cb-left">
+        <span class="eyebrow">SECTION 02</span>
+        <h2 style="margin-top: 14px;">The audio never leaves.</h2>
+      </div>
+      <div class="cb-right">
+        <p>This product has one architectural principle: processing happens on your hardware, not ours or anyone else's.</p>
+        <p>Transcription runs locally using faster-whisper. Speaker diarisation runs locally. Voice synthesis runs locally. The only external call in the default configuration is to the Claude API for text generation — and that call contains only the transcript text, never the audio file.</p>
+        <p>If you need zero external calls, one environment variable switches the text generation to a local LLM. The same interface, the same output, running entirely on your own servers.</p>
+      </div>
+    </div>
+
+    <div class="architecture-diagram">
+      <div class="diagram-row bad-row">
+        <div class="diagram-label">CLOUD TOOL</div>
+        <div class="diagram-flow">
+          <div class="d-node">Your audio</div>
+          <div class="d-arrow"><span class="warn">↗ Internet</span><svg width="60" height="20" viewBox="0 0 60 20"><line x1="0" y1="10" x2="55" y2="10" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3"/><polygon points="55,5 60,10 55,15" fill="currentColor"/></svg></div>
+          <div class="d-node external">External server</div>
+          <div class="d-arrow"><svg width="60" height="20" viewBox="0 0 60 20"><line x1="0" y1="10" x2="55" y2="10" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3"/><polygon points="55,5 60,10 55,15" fill="currentColor"/></svg></div>
+          <div class="d-node">Processed</div>
+          <div class="d-arrow"><svg width="60" height="20" viewBox="0 0 60 20"><line x1="0" y1="10" x2="55" y2="10" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3"/><polygon points="55,5 60,10 55,15" fill="currentColor"/></svg></div>
+          <div class="d-node">Result</div>
+        </div>
+      </div>
+
+      <div class="diagram-divider">
+        <span>vs.</span>
+      </div>
+
+      <div class="diagram-row good-row">
+        <div class="diagram-label">THIS PRODUCT</div>
+        <div class="diagram-flow">
+          <div class="d-node">Your audio</div>
+          <div class="d-arrow"><svg width="60" height="20" viewBox="0 0 60 20"><line x1="0" y1="10" x2="55" y2="10" stroke="currentColor" stroke-width="1.5"/><polygon points="55,5 60,10 55,15" fill="currentColor"/></svg></div>
+          <div class="d-node">Your server</div>
+          <div class="d-arrow"><svg width="60" height="20" viewBox="0 0 60 20"><line x1="0" y1="10" x2="55" y2="10" stroke="currentColor" stroke-width="1.5"/><polygon points="55,5 60,10 55,15" fill="currentColor"/></svg></div>
+          <div class="d-node local">Local processing</div>
+          <div class="d-arrow"><svg width="60" height="20" viewBox="0 0 60 20"><line x1="0" y1="10" x2="55" y2="10" stroke="currentColor" stroke-width="1.5"/><polygon points="55,5 60,10 55,15" fill="currentColor"/></svg></div>
+          <div class="d-node">Result</div>
+        </div>
+        <div class="diagram-caption">nothing leaves your network</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Section 3: Deployment tiers -->
+<section class="compliance-block" data-screen-label="05 Deployment tiers">
+  <div class="container">
+    <div class="cb-grid">
+      <div class="cb-left">
+        <span class="eyebrow">SECTION 03</span>
+        <h2 style="margin-top: 14px;">Three ways to deploy. All of them local.</h2>
+      </div>
+      <div class="cb-right">
+        <p>Choose the tier that matches your environment. They share the same interface — the only difference is how much (or how little) ever touches an external network.</p>
+      </div>
+    </div>
+
+    <div class="tiers-grid">
+      <div class="tier">
+        <div class="tier-head">
+          <span class="tier-num">OPTION 01</span>
+          <span class="tier-tag recommended">Recommended</span>
+        </div>
+        <h3>Default</h3>
+        <p class="tier-sub">For most organisations</p>
+        <div class="tier-rows">
+          <div class="tier-row"><span class="tr-key">Transcription</span><span class="tr-val local">Local</span></div>
+          <div class="tier-row"><span class="tr-key">Generation</span><span class="tr-val mixed">Claude API · text only</span></div>
+          <div class="tier-row"><span class="tr-key">Voice synthesis</span><span class="tr-val local">Local</span></div>
+          <div class="tier-row"><span class="tr-key">Guest research</span><span class="tr-val local">Wikipedia · offline capable</span></div>
+        </div>
+        <div class="tier-foot">Audio never leaves. Generation calls send transcript text only.</div>
+      </div>
+
+      <div class="tier">
+        <div class="tier-head">
+          <span class="tier-num">OPTION 02</span>
+          <span class="tier-tag fully-local">Fully local</span>
+        </div>
+        <h3>Fully local</h3>
+        <p class="tier-sub">Zero external calls</p>
+        <div class="tier-rows">
+          <div class="tier-row"><span class="tr-key">Transcription</span><span class="tr-val local">Local</span></div>
+          <div class="tier-row"><span class="tr-key">Generation</span><span class="tr-val local">LM Studio · local LLM</span></div>
+          <div class="tier-row"><span class="tr-key">Voice synthesis</span><span class="tr-val local">Local</span></div>
+          <div class="tier-row"><span class="tr-key">External calls</span><span class="tr-val local">None</span></div>
+        </div>
+        <div class="tier-foot">Requires GPU with 16GB+ VRAM for reliable structured output.</div>
+      </div>
+
+      <div class="tier">
+        <div class="tier-head">
+          <span class="tier-num">OPTION 03</span>
+          <span class="tier-tag airgap">Air-gapped</span>
+        </div>
+        <h3>Air-gapped</h3>
+        <p class="tier-sub">No network required</p>
+        <div class="tier-rows">
+          <div class="tier-row"><span class="tr-key">All processing</span><span class="tr-val local">Local</span></div>
+          <div class="tier-row"><span class="tr-key">Guest research</span><span class="tr-val local">Kiwix offline Wikipedia</span></div>
+          <div class="tier-row"><span class="tr-key">Network</span><span class="tr-val local">Not required</span></div>
+          <div class="tier-row"><span class="tr-key">Setup</span><span class="tr-val local">One-time online install</span></div>
+        </div>
+        <div class="tier-foot">For environments with no external network access.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Section 4: Data storage -->
+<section class="compliance-block alt" data-screen-label="06 Data storage">
+  <div class="container">
+    <div class="cb-grid">
+      <div class="cb-left">
+        <span class="eyebrow">SECTION 04</span>
+        <h2 style="margin-top: 14px;">Nothing persists that shouldn't.</h2>
+      </div>
+      <div class="cb-right">
+        <p>What gets stored — and what doesn't — is part of the architecture, not a setting.</p>
+      </div>
+    </div>
+
+    <div class="data-grid">
+      <div class="data-item">
+        <div class="ci-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <div>
+          <div class="di-title">Audio files</div>
+          <div class="di-sub">Written to a temporary directory, deleted after the pipeline completes.</div>
+        </div>
+      </div>
+      <div class="data-item">
+        <div class="ci-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <div>
+          <div class="di-title">Results</div>
+          <div class="di-sub">Held in memory during the session. Production deployments use your own database.</div>
+        </div>
+      </div>
+      <div class="data-item">
+        <div class="ci-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <div>
+          <div class="di-title">Logs &amp; telemetry</div>
+          <div class="di-sub">No usage logs, no telemetry, no analytics calls to external services.</div>
+        </div>
+      </div>
+      <div class="data-item">
+        <div class="ci-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <div>
+          <div class="di-title">Model training</div>
+          <div class="di-sub">No model training on your content. Ever.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Section 5: NZ HIPC -->
+<section class="compliance-block" data-screen-label="07 NZ HIPC">
+  <div class="container">
+    <div class="cb-grid">
+      <div class="cb-left">
+        <span class="eyebrow">SECTION 05</span>
+        <h2 style="margin-top: 14px;">Designed with NZ health privacy requirements in mind.</h2>
+      </div>
+      <div class="cb-right">
+        <p>The architecture was designed specifically for the constraints of NZ health sector deployment — particularly the requirement that health information not be transmitted to overseas servers without explicit consent and controls.</p>
+        <p>The fully local and air-gapped deployment modes are designed to satisfy these requirements in practice. Your organisation's privacy officer and legal team should review the deployment configuration for your specific context — we're happy to walk through the architecture with them.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="demo" class="final-cta" data-screen-label="08 Final CTA">
+  <div class="final-cta-inner">
+    <span class="eyebrow">TALK TO US</span>
+    <h2 style="margin-top: 14px;">Talk to us about your deployment.</h2>
+    <p class="sub">We'll walk your privacy and legal team through the architecture, and propose the deployment tier that fits your environment.</p>
+    <div class="cta-row">
+      <a href="/app" class="btn btn-primary">Book a deployment review →</a>
+      <a href="/features" class="btn btn-ghost">Read the feature detail</a>
+    </div>
+  </div>
+</section>
+
+<footer data-screen-label="09 Footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="/" class="logo">
+          <div class="eq-bars"><span></span><span></span><span></span><span></span><span></span></div>
+          <span>Podcast Intelligence</span>
+        </a>
+        <p>AI podcast production for organisations that can't use the cloud.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="/features">Features</a></li>
+          <li><a href="/#how">How it works</a></li>
+          <li><a href="/compliance">Compliance</a></li>
+          <li><a href="#">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="#">Setup guide</a></li>
+          <li><a href="#">API docs</a></li>
+          <li><a href="#">Architecture overview</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Get in touch</h4>
+        <ul>
+          <li><a href="/app">Open Studio</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 Podcast Intelligence · Built in New Zealand</div>
+      <div>
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

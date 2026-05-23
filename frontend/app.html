@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Studio — Podcast Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/shared.css">
+  <style>
+    /* App-specific overrides */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+    .eq-bar {
+      width: 3px; border-radius: 2px;
+      background: var(--teal);
+      animation: eq 1.4s ease-in-out infinite;
+      transform-origin: bottom; flex-shrink: 0;
+    }
+    @keyframes eq {
+      0%,100% { transform: scaleY(0.2); opacity: 0.35; }
+      50%      { transform: scaleY(1);   opacity: 1; }
+    }
+    .eq-bar:nth-child(1)  { height:12px; animation-delay:0s; }
+    .eq-bar:nth-child(2)  { height:22px; animation-delay:.12s; }
+    .eq-bar:nth-child(3)  { height:32px; animation-delay:.06s; }
+    .eq-bar:nth-child(4)  { height:18px; animation-delay:.24s; }
+    .eq-bar:nth-child(5)  { height:36px; animation-delay:.18s; }
+    .eq-bar:nth-child(6)  { height:28px; animation-delay:.3s; }
+    .eq-bar:nth-child(7)  { height:14px; animation-delay:.09s; }
+    .eq-bar:nth-child(8)  { height:34px; animation-delay:.21s; }
+    .eq-bar:nth-child(9)  { height:20px; animation-delay:.15s; }
+    .eq-bar:nth-child(10) { height:30px; animation-delay:.03s; }
+    .eq-bar:nth-child(11) { height:16px; animation-delay:.27s; }
+    .eq-bar:nth-child(12) { height:26px; animation-delay:.33s; }
+
+    .drop-zone {
+      border: 1px solid rgba(10,126,164,0.2);
+      border-radius: 12px;
+      transition: border-color .2s, background .2s;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .drop-zone:hover, .drop-zone.over {
+      border-color: rgba(10,126,164,0.55);
+      background: rgba(10,126,164,0.04);
+    }
+
+    .tab-pill {
+      padding: 5px 14px;
+      border-radius: 100px;
+      font-size: 12.5px; font-weight: 500;
+      color: var(--t3); cursor: pointer;
+      white-space: nowrap;
+      transition: all .15s;
+      border: 1px solid transparent; background: none;
+      font-family: inherit;
+    }
+    .tab-pill:hover { color: var(--t2); }
+    .tab-pill.active {
+      background: rgba(10,126,164,0.12);
+      border-color: rgba(10,126,164,0.28);
+      color: var(--teal-sky);
+    }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    .stage-row {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 7px 10px; border-radius: 8px; transition: background .2s;
+    }
+    .stage-row.active { background: rgba(10,126,164,0.08); }
+
+    .pull-quote {
+      position: relative;
+      padding: 20px 20px 16px 24px;
+      border-left: 2px solid rgba(10,126,164,0.35);
+      background: rgba(10,126,164,0.04);
+      border-radius: 0 8px 8px 0;
+    }
+    .pull-quote::before {
+      content: '\201C';
+      position: absolute; top: -8px; left: 12px;
+      font-size: 56px; color: rgba(10,126,164,0.25);
+      font-family: Georgia, serif; line-height: 1; pointer-events: none;
+    }
+
+    .script-stage {
+      background: var(--navy-mid);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 10px; position: relative; overflow: hidden;
+    }
+    .script-stage::before {
+      content: '';
+      position: absolute; top: -80px; left: 50%;
+      transform: translateX(-50%);
+      width: 340px; height: 220px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(10,126,164,0.14), transparent 68%);
+      pointer-events: none;
+    }
+
+    .flag-card {
+      padding: 12px 14px; border-radius: 8px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05); margin-bottom: 8px;
+    }
+    .flag-card.high   { border-left: 3px solid var(--red); }
+    .flag-card.medium { border-left: 3px solid var(--amber); }
+    .flag-card.low    { border-left: 3px solid var(--green); }
+
+    .tx-row {
+      display: grid; grid-template-columns: 44px 100px 1fr;
+      gap: 10px; padding: 7px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04); align-items: baseline;
+    }
+    .tx-row:last-child { border-bottom: none; }
+
+    .ch-row {
+      display: grid; grid-template-columns: 52px 1fr;
+      gap: 14px; padding: 16px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05); align-items: start;
+    }
+    .ch-row:last-child { border-bottom: none; }
+
+    .app-mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; color: var(--teal); letter-spacing: .04em;
+    }
+
+    .sbar { height: 3px; border-radius: 2px; transition: width 1s ease-out; }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.15} }
+    .blink { animation: blink 1s ease-in-out infinite; }
+
+    .progress-track { height: 2px; background: rgba(255,255,255,0.06); border-radius:1px; overflow:hidden; }
+    .progress-fill  { height:100%; background: linear-gradient(90deg, var(--teal), var(--teal-sky)); border-radius:1px; transition: width .5s ease-out; }
+
+    .fade-up { animation: fade-up .35s ease-out; }
+    @keyframes fade-up { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+    .spk0 { color: var(--teal-sky); }
+    .spk1 { color: var(--purple); }
+    .spk2 { color: #34D399; }
+
+    .err-banner {
+      display: none; align-items: flex-start; gap: 10px;
+      padding: 11px 14px; border-radius: 9px;
+      background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.22); margin-top: 10px;
+    }
+    .err-banner.visible { display: flex; }
+
+    .copy-btn {
+      padding: 4px 10px; border-radius: 6px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--t3); font-size: 11px; font-weight: 500;
+      cursor: pointer; font-family: inherit;
+      transition: color .15s, border-color .15s;
+    }
+    .copy-btn:hover { color: var(--t2); border-color: rgba(255,255,255,0.15); }
+
+    /* App content area */
+    .app-content {
+      min-height: calc(100vh - 57px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 48px 24px;
+    }
+    .app-content.top { align-items: flex-start; }
+    .results-header {
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      padding: 18px 24px;
+      position: sticky; top: 57px;
+      background: var(--navy); z-index: 10;
+    }
+
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ NAV ══════════════ -->
+<nav class="topnav">
+  <div class="nav-inner">
+    <a href="/" class="logo">
+      <div class="eq-bars"><span></span><span></span><span></span><span></span><span></span></div>
+      <span>Podcast Intelligence</span>
+    </a>
+    <div class="nav-links">
+      <a href="/#how">How it works</a>
+      <a href="/features">Features</a>
+      <a href="/compliance">Compliance</a>
+      <span id="status-badge" class="nav-status"><span id="status-dot" class="dot"></span><span id="status-text">LOCAL</span></span>
+    </div>
+  </div>
+</nav>
+
+
+<!-- ══════════════ UPLOAD ══════════════ -->
+<div id="s-upload" class="app-content">
+  <div style="width:100%;max-width:520px;">
+
+    <div style="text-align:center;margin-bottom:36px;">
+      <span class="eyebrow" style="display:block;margin-bottom:16px;">PODCAST INTELLIGENCE STUDIO</span>
+      <h1 style="font-size:clamp(28px,5vw,44px);margin-bottom:12px;">
+        What happened in<br/>this episode?
+      </h1>
+      <p style="font-size:14px;line-height:1.65;">
+        Drop any episode — get show notes, chapters, a cold open script<br/>and an honest producer's critique in minutes.
+      </p>
+    </div>
+
+    <!-- Drop zone -->
+    <div id="dz" class="drop-zone" style="padding:44px 28px;text-align:center;">
+      <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:.025;pointer-events:none;" viewBox="0 0 520 180" preserveAspectRatio="none">
+        <polyline fill="none" stroke="white" stroke-width="1.5"
+          points="0,90 25,68 50,105 75,48 100,108 125,58 150,94 175,42 200,102 225,72 250,90 275,52 300,98 325,38 350,92 375,66 400,88 425,44 450,104 475,70 500,86 520,90"/>
+      </svg>
+      <input id="fi" type="file" accept="audio/*" style="display:none;" />
+
+      <div id="dz-idle">
+        <svg style="width:36px;height:36px;color:var(--t3);margin:0 auto 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+        </svg>
+        <p style="font-weight:600;font-size:14.5px;color:var(--off-white);margin-bottom:5px;">Drop your audio here</p>
+        <p style="font-size:12px;color:var(--t3);margin-bottom:18px;">MP3 · WAV · M4A · OGG · FLAC</p>
+        <button onclick="event.stopPropagation(); document.getElementById('fi').click()"
+          style="padding:7px 18px;background:rgba(10,126,164,.14);border:1px solid rgba(10,126,164,.32);border-radius:8px;color:var(--teal-sky);font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit;">
+          Browse files
+        </button>
+      </div>
+
+      <div id="dz-sel" style="display:none;">
+        <div style="width:38px;height:38px;border-radius:50%;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">
+          <svg style="width:16px;height:16px;color:var(--green);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <p id="dz-name" style="font-weight:600;font-size:14.5px;color:var(--off-white);margin-bottom:3px;"></p>
+        <p id="dz-size" style="font-size:11.5px;color:var(--t3);"></p>
+      </div>
+    </div>
+
+    <!-- Guest name -->
+    <div style="margin-top:14px;">
+      <label style="font-size:10.5px;color:var(--t3);letter-spacing:.07em;font-weight:600;display:block;margin-bottom:6px;">
+        GUEST NAME <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional · triggers research stage)</span>
+      </label>
+      <input id="guest" type="text" placeholder="e.g. Lex Fridman"
+        style="width:100%;padding:10px 13px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:8px;color:var(--off-white);font-size:13.5px;font-family:inherit;outline:none;transition:border-color .2s;"
+        onfocus="this.style.borderColor='rgba(10,126,164,.45)'"
+        onblur="this.style.borderColor='rgba(255,255,255,.08)'" />
+    </div>
+
+    <button id="run-btn" disabled onclick="go()"
+      style="width:100%;margin-top:14px;padding:13px;background:var(--teal);border:none;border-radius:8px;color:#fff;font-size:14.5px;font-weight:700;cursor:pointer;letter-spacing:-.01em;opacity:.25;transition:opacity .2s;font-family:inherit;">
+      Analyse episode →
+    </button>
+
+    <div id="upload-err" class="err-banner" role="alert">
+      <svg style="width:15px;height:15px;color:var(--red);flex-shrink:0;margin-top:1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span id="upload-err-msg" style="font-size:12.5px;color:#FCA5A5;line-height:1.5;"></span>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════ PROCESSING ══════════════ -->
+<div id="s-proc" style="display:none;" class="app-content">
+  <div style="width:100%;max-width:480px;text-align:center;">
+
+    <div style="display:flex;align-items:flex-end;justify-content:center;gap:3px;height:44px;margin-bottom:30px;">
+      <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+      <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+      <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+      <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+    </div>
+
+    <div id="p-label" style="font-size:20px;font-weight:800;letter-spacing:-.025em;margin-bottom:5px;color:var(--off-white);">Starting…</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:28px;">
+      <div id="p-file"    style="font-size:12px;color:var(--t3);font-family:'JetBrains Mono',monospace;"></div>
+      <div id="p-elapsed" style="font-size:12px;color:var(--t3);font-family:'JetBrains Mono',monospace;"></div>
+    </div>
+
+    <div class="progress-track" style="margin-bottom:22px;">
+      <div id="p-bar" class="progress-fill" style="width:0%;"></div>
+    </div>
+
+    <div id="proc-err" class="err-banner" style="text-align:left;margin-bottom:16px;" role="alert">
+      <svg style="width:15px;height:15px;color:var(--red);flex-shrink:0;margin-top:1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <div>
+        <div style="font-size:12.5px;font-weight:600;color:#FCA5A5;margin-bottom:3px;">Pipeline failed</div>
+        <div id="proc-err-msg" style="font-size:12px;color:rgba(252,165,165,.7);line-height:1.5;"></div>
+        <button onclick="reset()" style="margin-top:10px;padding:6px 14px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.28);border-radius:7px;color:#FCA5A5;font-size:11.5px;font-weight:500;cursor:pointer;font-family:inherit;">
+          ← Try another file
+        </button>
+      </div>
+    </div>
+
+    <div id="p-stages" style="text-align:left;"></div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════ RESULTS ══════════════ -->
+<div id="s-res" style="display:none;min-height:calc(100vh - 57px);padding-bottom:80px;">
+
+  <div class="results-header">
+    <div style="max-width:760px;margin:0 auto;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
+        <div style="flex:1;min-width:0;">
+          <h2 id="r-title" style="font-size:18px;font-weight:800;letter-spacing:-.025em;line-height:1.2;margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--off-white);"></h2>
+          <div id="r-meta" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;"></div>
+        </div>
+        <div style="display:flex;gap:7px;flex-shrink:0;">
+          <button onclick="_exportAll()"
+            style="padding:6px 12px;border:1px solid rgba(255,255,255,.09);border-radius:7px;background:none;color:var(--t3);font-size:11.5px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;">
+            <svg style="width:11px;height:11px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Export
+          </button>
+          <button onclick="reset()"
+            style="padding:6px 12px;border:1px solid rgba(255,255,255,.09);border-radius:7px;background:none;color:var(--t3);font-size:11.5px;cursor:pointer;font-family:inherit;">
+            ← New episode
+          </button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:3px;overflow-x:auto;">
+        <button class="tab-pill" data-tab="cold-open"  onclick="tab('cold-open',this)">Cold Open</button>
+        <button class="tab-pill" data-tab="quality"    onclick="tab('quality',this)">Quality</button>
+        <button class="tab-pill" data-tab="show-notes" onclick="tab('show-notes',this)">Show Notes</button>
+        <button class="tab-pill" data-tab="chapters"   onclick="tab('chapters',this)">Chapters</button>
+        <button class="tab-pill" data-tab="transcript" onclick="tab('transcript',this)">Transcript</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width:760px;margin:0 auto;padding:0 24px;">
+    <div id="tab-cold-open"  class="tab-pane" style="padding-top:34px;"><div id="co"></div></div>
+    <div id="tab-quality"    class="tab-pane" style="padding-top:34px;"><div id="qs"></div></div>
+    <div id="tab-show-notes" class="tab-pane" style="padding-top:34px;"><div id="sn"></div></div>
+    <div id="tab-chapters"   class="tab-pane" style="padding-top:34px;"><div id="ch"></div></div>
+    <div id="tab-transcript" class="tab-pane" style="padding-top:34px;"><div id="tx"></div></div>
+  </div>
+
+</div>
+
+
+<script>
+const STEP_LABELS = {
+  transcribing:           'Transcribing audio',
+  diarising:              'Identifying speakers',
+  researching_guest:      'Researching guest',
+  generating_show_notes:  'Generating show notes',
+  detecting_chapters:     'Detecting chapters',
+  writing_cold_open:      'Writing cold open',
+  scoring_quality:        'Scoring quality',
+};
+const STEP_DESC = {
+  transcribing:          'Converting speech to text with word-level timestamps',
+  diarising:             'Separating who said what throughout the episode',
+  researching_guest:     'Pulling background context on your guest',
+  generating_show_notes: 'Structuring key moments, themes and quotable lines',
+  detecting_chapters:    'Finding topic shifts for chapter navigation',
+  writing_cold_open:     'Writing a 30-second spoken hook from the best moment',
+  scoring_quality:       'Rating information density, pacing and clarity',
+};
+
+let _file = null, _jobId = null, _timer = null, _coText = '', _startedAt = null, _results = null;
+
+// Health check — update nav badge
+(async function initHealth() {
+  try {
+    const r = await fetch('/api/health');
+    if (!r.ok) return;
+    const d = await r.json();
+    const text  = document.getElementById('status-text');
+    const dot   = document.getElementById('status-dot');
+    if (text && d.llm_provider !== 'local') {
+      text.textContent = 'CLOUD';
+      if (dot) { dot.style.background = 'var(--teal-sky)'; dot.style.boxShadow = '0 0 8px var(--teal-sky)'; }
+    }
+    if (d.tts_backend !== 'ready') {
+      const links = document.querySelector('.nav-links');
+      if (links) {
+        const warn = document.createElement('span');
+        warn.className = 'nav-status';
+        warn.style.cssText = 'border-color:rgba(245,158,11,.3);color:var(--amber);';
+        warn.innerHTML = '<span class="dot" style="background:var(--amber);box-shadow:0 0 8px var(--amber);"></span>TTS OFF';
+        links.insertBefore(warn, links.lastElementChild);
+      }
+    }
+  } catch(e) {}
+})();
+
+// File selection
+const dz = document.getElementById('dz');
+const fi = document.getElementById('fi');
+dz.addEventListener('click', () => fi.click());
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('over'); if(e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]); });
+fi.addEventListener('change', () => { if(fi.files[0]) setFile(fi.files[0]); });
+
+function setFile(f) {
+  _file = f;
+  _hideUploadErr();
+  document.getElementById('dz-idle').style.display = 'none';
+  document.getElementById('dz-sel').style.display  = 'block';
+  document.getElementById('dz-name').textContent   = f.name;
+  document.getElementById('dz-size').textContent   = (f.size/1024/1024).toFixed(1)+' MB';
+  const btn = document.getElementById('run-btn');
+  btn.disabled = false; btn.style.opacity = '1';
+}
+
+function _showUploadErr(msg) {
+  document.getElementById('upload-err-msg').textContent = msg;
+  document.getElementById('upload-err').classList.add('visible');
+}
+function _hideUploadErr() {
+  document.getElementById('upload-err').classList.remove('visible');
+}
+function _showProcErr(msg) {
+  document.getElementById('proc-err-msg').textContent = msg || 'Unknown error. Check the server logs.';
+  document.getElementById('proc-err').classList.add('visible');
+  document.getElementById('p-label').textContent = 'Failed';
+  document.getElementById('p-label').style.color = 'var(--red)';
+}
+
+async function go() {
+  if (!_file) return;
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true; btn.style.opacity = '.4'; btn.textContent = 'Uploading…';
+  _hideUploadErr();
+
+  const fd = new FormData();
+  fd.append('audio', _file);
+  const g = document.getElementById('guest').value.trim();
+  if (g) fd.append('guest_name', g);
+
+  try {
+    const r = await fetch('/api/process', { method:'POST', body:fd });
+    if (!r.ok) {
+      const e = await r.json();
+      _showUploadErr('Upload failed: ' + (e.detail || r.statusText));
+      _resetBtn(); return;
+    }
+    const d = await r.json();
+    _jobId = d.job_id; _startedAt = Date.now();
+    document.getElementById('p-file').textContent    = _file.name;
+    document.getElementById('p-elapsed').textContent = '';
+    document.getElementById('proc-err').classList.remove('visible');
+    document.getElementById('p-label').style.color = '';
+    _show('proc');
+    _timer = setInterval(_poll, 2000);
+  } catch(e) {
+    _showUploadErr('Network error: ' + e.message);
+    _resetBtn();
+  }
+}
+
+function _resetBtn() {
+  const b = document.getElementById('run-btn');
+  b.disabled = false; b.style.opacity = '1'; b.textContent = 'Analyse episode →';
+}
+
+async function _poll() {
+  if (!_jobId) return;
+  try {
+    const r = await fetch('/api/jobs/'+_jobId);
+    const j = await r.json();
+    _updateProc(j);
+    if (j.status==='done')   { clearInterval(_timer); _showResults(j.results); }
+    if (j.status==='failed') { clearInterval(_timer); _showProcErr(j.error); }
+  } catch(e) { console.error(e); }
+}
+
+function _updateProc(j) {
+  const label = STEP_LABELS[j.current_step] || (j.status==='done' ? 'Complete' : 'Processing…');
+  document.getElementById('p-label').textContent = label;
+  document.getElementById('p-bar').style.width   = (j.progress_pct||0)+'%';
+
+  if (_startedAt) {
+    const secs = Math.round((Date.now() - _startedAt) / 1000);
+    document.getElementById('p-elapsed').textContent = secs + 's elapsed';
+  }
+
+  const skipGuest = j.steps_total < 7;
+  const visibleSteps = Object.entries(STEP_LABELS).filter(([k]) =>
+    !(k === 'researching_guest' && skipGuest)
+  );
+
+  document.getElementById('p-stages').innerHTML = visibleSteps.map(([k,lbl]) => {
+    const done   = j.steps_completed.includes(k);
+    const active = j.current_step === k;
+    return `<div class="stage-row ${done?'done':active?'active':'pending'}" style="${done?'opacity:.4':''}">
+      <div style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">
+        ${done
+          ? `<svg style="width:13px;height:13px;color:var(--green);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>`
+          : active
+          ? `<div style="width:7px;height:7px;border-radius:50%;background:var(--teal);" class="blink"></div>`
+          : `<div style="width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.12);"></div>`
+        }
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:${active?600:400};color:${active?'var(--off-white)':'var(--t2)'};">${lbl}</div>
+        ${active ? `<div style="font-size:11px;color:var(--t3);margin-top:2px;">${STEP_DESC[k]||''}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function _show(name) {
+  document.getElementById('s-upload').style.display = name==='upload' ? 'flex'  : 'none';
+  document.getElementById('s-proc').style.display   = name==='proc'  ? 'flex'  : 'none';
+  document.getElementById('s-res').style.display    = name==='res'   ? 'block' : 'none';
+}
+
+function reset() {
+  clearInterval(_timer);
+  _file = null; _jobId = null; _startedAt = null; _results = null; _coText = '';
+  fi.value = '';
+  document.getElementById('guest').value = '';
+  document.getElementById('dz-idle').style.display = 'block';
+  document.getElementById('dz-sel').style.display  = 'none';
+  document.getElementById('p-label').style.color = '';
+  document.getElementById('proc-err').classList.remove('visible');
+  _hideUploadErr();
+  const b = document.getElementById('run-btn');
+  b.disabled = true; b.style.opacity = '.25'; b.textContent = 'Analyse episode →';
+  _show('upload');
+}
+
+function tab(name, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-pill').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+function _activateTab(name) {
+  const btn = document.querySelector(`.tab-pill[data-tab="${name}"]`);
+  tab(name, btn);
+}
+
+function _showResults(r) {
+  _results = r;
+  _show('res');
+  document.getElementById('s-res').classList.add('fade-up');
+
+  const sn  = r.show_notes || {};
+  const dur = r.transcription?.duration;
+  const spk = r.transcript?.speaker_count;
+  const lng = r.transcription?.language;
+
+  document.getElementById('r-title').textContent = sn.title || 'Episode Analysis';
+
+  const chips = [];
+  if (dur) chips.push(_chip(Math.round(dur/60)+' min'));
+  if (spk) chips.push(_chip(spk+' speaker'+(spk!==1?'s':'')));
+  if (lng) chips.push(_chip(lng.toUpperCase()));
+  document.getElementById('r-meta').innerHTML = chips.join('');
+
+  _renderCO(r.cold_open||{});
+  _renderQS(r.quality_score||{});
+  _renderSN(sn, r.guest_research);
+  _renderCH(r.chapters||[]);
+  _renderTX(r.transcript||{});
+  _activateTab('cold-open');
+}
+
+function _chip(t) {
+  return `<span style="font-size:11px;color:var(--t3);padding:2px 7px;border-radius:4px;background:rgba(255,255,255,.05);font-family:'JetBrains Mono',monospace;">${_esc(String(t))}</span>`;
+}
+
+async function _copy(text, btn) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch(e) {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+  const orig = btn.textContent;
+  btn.textContent = 'Copied!'; btn.style.color = 'var(--green)';
+  setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1500);
+}
+
+function _exportAll() {
+  if (!_results) return;
+  const r = _results;
+  const sn = r.show_notes || {};
+  const title = sn.title || document.getElementById('r-title').textContent || 'Episode Analysis';
+  const lines = [];
+
+  lines.push(`# ${title}\n`);
+  if (_coText) lines.push(`## Cold Open Script\n${_coText}\n`);
+
+  if (r.quality_score?.overall !== undefined) {
+    const qs = r.quality_score;
+    lines.push(`## Quality Score: ${qs.overall}/10`);
+    if (qs.top_strength)    lines.push(`Strength: ${qs.top_strength}`);
+    if (qs.top_improvement) lines.push(`Improve:  ${qs.top_improvement}`);
+    if (qs.scores) Object.entries(qs.scores).forEach(([k,v]) => lines.push(`  ${k}: ${v}/10`));
+    lines.push('');
+  }
+
+  if (sn.description) lines.push(`## Show Notes\n${sn.description}\n`);
+  if ((sn.key_themes||[]).length) lines.push(`Themes: ${sn.key_themes.join(', ')}\n`);
+  if ((sn.notable_moments||[]).length) {
+    lines.push('### Notable Moments');
+    sn.notable_moments.forEach(m => lines.push(`${m.timestamp}  ${m.description}`));
+    lines.push('');
+  }
+  if ((sn.quotable_moments||[]).length) {
+    lines.push('### Quotes');
+    sn.quotable_moments.forEach(q => lines.push(`"${q.quote}" — ${q.timestamp}`));
+    lines.push('');
+  }
+
+  const chs = r.chapters || [];
+  if (chs.length) {
+    lines.push('## Chapters');
+    chs.forEach((c,i) => lines.push(`${String(i+1).padStart(2,'0')}. [${c.timestamp_display}] ${c.title} — ${c.summary}`));
+    lines.push('');
+  }
+
+  const txLines = r.transcript?.lines || [];
+  if (txLines.length) {
+    lines.push('## Transcript');
+    txLines.forEach(l => lines.push(`${l.timestamp}  ${l.speaker}  ${l.text}`));
+  }
+
+  const blob = new Blob([lines.join('\n')], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = title.replace(/[^a-z0-9]/gi,'_').toLowerCase() + '.txt';
+  a.click();
+}
+
+function _getSnText() {
+  const sn = (_results||{}).show_notes || {};
+  const parts = [];
+  if (sn.title)       parts.push(sn.title);
+  if (sn.description) parts.push('\n'+sn.description);
+  if ((sn.key_themes||[]).length) parts.push('\nThemes: '+sn.key_themes.join(', '));
+  if ((sn.notable_moments||[]).length) {
+    parts.push('\nNotable Moments:');
+    sn.notable_moments.forEach(m => parts.push(`${m.timestamp}  ${m.description}`));
+  }
+  if ((sn.quotable_moments||[]).length) {
+    parts.push('\nQuotes:');
+    sn.quotable_moments.forEach(q => parts.push(`"${q.quote}" — ${q.timestamp}`));
+  }
+  return parts.join('\n');
+}
+
+function _renderSN(sn, guest) {
+  const el = document.getElementById('sn');
+  if (!sn.title) { el.innerHTML = _empty('No show notes generated.'); return; }
+
+  const themes = (sn.key_themes||[]).map(t =>
+    `<span style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 9px;border-radius:4px;background:rgba(10,126,164,.09);color:var(--teal);border:1px solid rgba(10,126,164,.2);">${_esc(t)}</span>`
+  ).join('');
+
+  const guestHtml = (guest?.found)
+    ? `<div style="padding:14px 16px;border-radius:9px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);margin-bottom:28px;">
+        <div style="font-size:10px;letter-spacing:.08em;color:var(--teal);font-weight:700;margin-bottom:5px;">GUEST CONTEXT</div>
+        <p style="font-size:13px;color:var(--t2);line-height:1.68;">${_esc(guest.summary)}</p>
+      </div>` : '';
+
+  const moments = (sn.notable_moments||[]).map(m =>
+    `<div style="display:grid;grid-template-columns:50px 1fr;gap:10px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.04);">
+      <span class="app-mono">${_esc(m.timestamp)}</span>
+      <span style="font-size:13.5px;color:var(--t2);line-height:1.58;">${_esc(m.description)}</span>
+    </div>`
+  ).join('');
+
+  const quotes = (sn.quotable_moments||[]).map(q =>
+    `<div class="pull-quote" style="margin:14px 0;border-radius:0 8px 8px 0;">
+      <p style="font-size:15.5px;color:var(--off-white);line-height:1.7;font-style:italic;margin-bottom:9px;padding-top:6px;">${_esc(q.quote)}</p>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="app-mono">${_esc(q.timestamp)}</span>
+        <span style="font-size:11.5px;color:var(--t3);">${_esc(q.context)}</span>
+      </div>
+    </div>`
+  ).join('');
+
+  el.innerHTML = `
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+      <button class="copy-btn" onclick="_copy(_getSnText(),this)">Copy</button>
+    </div>
+    ${guestHtml}
+    <p style="font-size:15.5px;color:var(--t2);line-height:1.78;margin-bottom:22px;">${_esc(sn.description||'')}</p>
+    ${themes ? `<div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:28px;">${themes}</div>` : ''}
+    ${moments ? `<div style="margin-bottom:28px;"><div style="font-size:10px;letter-spacing:.08em;color:var(--t3);font-weight:700;margin-bottom:10px;">NOTABLE MOMENTS</div>${moments}</div>` : ''}
+    ${quotes  ? `<div><div style="font-size:10px;letter-spacing:.08em;color:var(--t3);font-weight:700;margin-bottom:10px;">QUOTABLE</div>${quotes}</div>` : ''}
+  `;
+}
+
+function _getChText() {
+  return ((_results||{}).chapters||[])
+    .map((c,i) => `${String(i+1).padStart(2,'0')}. [${c.timestamp_display}] ${c.title}\n    ${c.summary}`)
+    .join('\n\n');
+}
+
+function _renderCH(chs) {
+  const el = document.getElementById('ch');
+  if (!chs.length) { el.innerHTML = _empty('No chapters detected.'); return; }
+  el.innerHTML = `<div style="display:flex;justify-content:flex-end;margin-bottom:16px;"><button class="copy-btn" onclick="_copy(_getChText(),this)">Copy</button></div>` +
+  chs.map((c,i) => `
+    <div class="ch-row">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
+        <div style="width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t3);font-family:'JetBrains Mono',monospace;">${String(i+1).padStart(2,'0')}</div>
+        <span class="app-mono" style="font-size:10px;">${_esc(c.timestamp_display)}</span>
+      </div>
+      <div>
+        <p style="font-weight:600;font-size:14.5px;letter-spacing:-.01em;margin-bottom:4px;color:var(--off-white);">${_esc(c.title)}</p>
+        <p style="font-size:12.5px;color:var(--t3);line-height:1.6;">${_esc(c.summary)}</p>
+      </div>
+    </div>`).join('');
+}
+
+function _renderCO(co) {
+  const el = document.getElementById('co');
+  if (!co.cold_open) { el.innerHTML = _empty('No cold open generated.'); return; }
+  _coText = co.cold_open;
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div style="font-size:10px;letter-spacing:.08em;color:var(--t3);font-weight:700;margin-bottom:3px;">COLD OPEN SCRIPT</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:12px;color:var(--t3);">${_esc(String(co.estimated_words||'~75'))} words · ~30 sec</span>
+          ${co.hook_moment?`<span class="app-mono">Hook at ${_esc(co.hook_moment)}</span>`:''}
+        </div>
+      </div>
+      <button class="copy-btn" onclick="_copy(_coText,this)">Copy</button>
+    </div>
+
+    <div class="script-stage" style="padding:38px 32px;margin-bottom:18px;">
+      <p style="font-size:18px;line-height:1.82;color:var(--off-white);position:relative;z-index:1;letter-spacing:-.01em;">&#8220;${_esc(co.cold_open)}&#8221;</p>
+    </div>
+
+    <div id="co-synth">
+      <button id="co-synth-btn" onclick="_synthCO()"
+        style="display:inline-flex;align-items:center;gap:7px;padding:9px 16px;background:rgba(10,126,164,.12);border:1px solid rgba(10,126,164,.28);border-radius:8px;color:var(--teal-sky);font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit;transition:opacity .15s;">
+        <svg style="width:13px;height:13px;" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"/>
+        </svg>
+        Hear it in AI voice
+      </button>
+      <p style="font-size:11px;color:var(--t3);margin-top:7px;">Requires Chatterbox TTS server running on port 8004</p>
+      <div id="co-synth-err" style="display:none;font-size:12px;color:var(--amber);margin-top:6px;"></div>
+      <audio id="co-audio" style="display:none;width:100%;margin-top:12px;" controls></audio>
+    </div>
+  `;
+}
+
+async function _synthCO() {
+  const btn = document.getElementById('co-synth-btn');
+  if (!btn) return;
+  btn.disabled = true; btn.style.opacity = '.4';
+  btn.innerHTML = `<svg style="width:13px;height:13px;animation:spin .8s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Synthesising…`;
+  if (!document.getElementById('spin-style')) {
+    const s = document.createElement('style'); s.id = 'spin-style';
+    s.textContent = '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}';
+    document.head.appendChild(s);
+  }
+  try {
+    const r = await fetch('/api/synthesize', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text:_coText})
+    });
+    if (!r.ok) {
+      const e = await r.json();
+      document.getElementById('co-synth-err').textContent = e.detail || 'Synthesis failed';
+      document.getElementById('co-synth-err').style.display = 'block';
+      btn.disabled = false; btn.style.opacity = '1';
+      btn.innerHTML = `<svg style="width:13px;height:13px;" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"/></svg> Hear it in AI voice`;
+      return;
+    }
+    const blob = await r.blob();
+    const aud = document.getElementById('co-audio');
+    aud.src = URL.createObjectURL(blob); aud.style.display = 'block'; aud.play();
+    btn.style.display = 'none';
+  } catch(e) {
+    document.getElementById('co-synth-err').textContent = e.message;
+    document.getElementById('co-synth-err').style.display = 'block';
+    btn.disabled = false; btn.style.opacity = '1';
+  }
+}
+
+function _getQsText() {
+  const qs = (_results||{}).quality_score || {};
+  const LABS = { information_density:'Information Density', pacing:'Pacing', clarity:'Clarity', memorable_moments:'Memorable Moments' };
+  const parts = [`Quality Score: ${qs.overall||'?'}/10`];
+  if (qs.scores) Object.entries(qs.scores).forEach(([k,v]) => parts.push(`  ${LABS[k]||k}: ${v}/10`));
+  if (qs.top_strength)    parts.push(`\nStrength: ${qs.top_strength}`);
+  if (qs.top_improvement) parts.push(`Improve:  ${qs.top_improvement}`);
+  if ((qs.flags||[]).length) {
+    parts.push('\nFlagged Segments:');
+    qs.flags.forEach(f => parts.push(`  ${f.timestamp} [${f.severity}] ${f.issue}${f.suggestion?' → '+f.suggestion:''}`));
+  }
+  return parts.join('\n');
+}
+
+function _renderQS(qs) {
+  const el = document.getElementById('qs');
+  if (!qs.scores) { el.innerHTML = _empty('No quality score generated.'); return; }
+
+  const col = s => s>=8?'var(--green)':s>=6?'var(--teal-sky)':s>=4?'var(--amber)':'var(--red)';
+  const LABS = { information_density:'Information Density', pacing:'Pacing', clarity:'Clarity', memorable_moments:'Memorable Moments' };
+
+  const bars = Object.entries(qs.scores||{}).map(([k,v]) => `
+    <div style="margin-bottom:15px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+        <span style="font-size:13px;color:var(--t2);">${LABS[k]||k}</span>
+        <span style="font-size:13px;font-weight:700;color:${col(v)};font-family:'JetBrains Mono',monospace;">${v}</span>
+      </div>
+      <div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;">
+        <div class="sbar" data-target="${v*10}" style="width:0%;background:${col(v)};"></div>
+      </div>
+    </div>`).join('');
+
+  const flags = (qs.flags||[]).map(f => `
+    <div class="flag-card ${_esc(f.severity)}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <span class="app-mono">${_esc(f.timestamp)}</span>
+        ${f.duration_seconds?`<span style="font-size:10.5px;color:var(--t3);">${_esc(String(f.duration_seconds))}s</span>`:''}
+        <span style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:${f.severity==='high'?'var(--red)':f.severity==='medium'?'var(--amber)':'var(--green)'};">${_esc(f.severity)}</span>
+      </div>
+      <p style="font-size:13px;color:var(--t2);${f.suggestion?'margin-bottom:3px;':''}">${_esc(f.issue)}</p>
+      ${f.suggestion?`<p style="font-size:11.5px;color:var(--t3);font-style:italic;">→ ${_esc(f.suggestion)}</p>`:''}
+    </div>`).join('');
+
+  el.innerHTML = `
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+      <button class="copy-btn" onclick="_copy(_getQsText(),this)">Copy</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:18px;margin-bottom:32px;padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.06);">
+      <div style="font-size:68px;font-weight:900;letter-spacing:-.04em;line-height:1;color:${col(qs.overall||0)};">${qs.overall||'—'}</div>
+      <div>
+        <div style="font-size:12px;color:var(--t3);margin-bottom:2px;">Overall / 10</div>
+        ${qs.top_strength?`<p style="font-size:12px;color:var(--green);margin-top:7px;line-height:1.5;">↑ ${_esc(qs.top_strength)}</p>`:''}
+        ${qs.top_improvement?`<p style="font-size:12px;color:var(--amber);margin-top:4px;line-height:1.5;">↗ ${_esc(qs.top_improvement)}</p>`:''}
+      </div>
+    </div>
+    <div style="margin-bottom:28px;">${bars}</div>
+    ${flags?`<div><div style="font-size:10px;letter-spacing:.08em;color:var(--t3);font-weight:700;margin-bottom:10px;">FLAGGED SEGMENTS</div>${flags}</div>`:''}
+  `;
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.sbar[data-target]').forEach(bar => {
+        bar.style.width = bar.dataset.target + '%';
+      });
+    });
+  });
+}
+
+function _getTxText() {
+  return ((_results||{}).transcript?.lines||[])
+    .map(l => `${l.timestamp}  ${l.speaker}  ${l.text}`)
+    .join('\n');
+}
+
+function _renderTX(t) {
+  const el = document.getElementById('tx');
+  const lines = t.lines||[];
+  if (!lines.length) { el.innerHTML = _empty('No transcript available.'); return; }
+
+  const spkMap = {}; let ci = 0;
+  const spkCls = ['spk0','spk1','spk2'];
+
+  el.innerHTML = `<div style="display:flex;justify-content:flex-end;margin-bottom:16px;"><button class="copy-btn" onclick="_copy(_getTxText(),this)">Copy</button></div>` +
+  lines.map(l => {
+    if (!spkMap[l.speaker]) spkMap[l.speaker] = spkCls[ci++ % spkCls.length];
+    return `<div class="tx-row">
+      <span class="app-mono">${_esc(l.timestamp)}</span>
+      <span class="${spkMap[l.speaker]}" style="font-size:10.5px;font-weight:600;font-family:'JetBrains Mono',monospace;letter-spacing:.03em;">${_esc(l.speaker)}</span>
+      <span style="font-size:13.5px;color:var(--t2);line-height:1.62;">${_esc(l.text)}</span>
+    </div>`;
+  }).join('');
+}
+
+function _esc(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+function _empty(msg) {
+  return `<div style="display:flex;flex-direction:column;align-items:center;padding:48px 0;gap:10px;">
+    <svg style="width:28px;height:28px;color:var(--t3);opacity:.4;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+    </svg>
+    <p style="font-size:13px;color:var(--t3);">${msg}</p>
+  </div>`;
+}
+</script>
+</body>
+</html>

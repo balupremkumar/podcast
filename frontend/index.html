@@ -1,1053 +1,1534 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Podcast Intelligence</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    :root {
-      --navy:      #0D1F3C;
-      --navy-mid:  #142847;
-      --navy-up:   #1A3358;
-      --teal:      #0A7EA4;
-      --teal-sky:  #38BDF8;
-      --off-white: #EEF2F7;
-      --t1: #EEF2F7;
-      --t2: #8B9BB4;
-      --t3: #4B5E7A;
-      --green:  #10B981;
-      --amber:  #F59E0B;
-      --red:    #EF4444;
-      --purple: #A78BFA;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Podcast Intelligence — AI podcast production that never leaves your network</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0D1F3C;
+    --navy-mid: #142847;
+    --navy-up: #1A3358;
+    --navy-deep: #091529;
+    --teal: #0A7EA4;
+    --teal-sky: #38BDF8;
+    --teal-glow: rgba(56, 189, 248, 0.18);
+    --off-white: #EEF2F7;
+    --t2: #8B9BB4;
+    --t3: #4B5E7A;
+    --green: #10B981;
+    --amber: #F59E0B;
+    --red: #EF4444;
+    --purple: #A78BFA;
+    --border: rgba(139, 155, 180, 0.14);
+    --border-strong: rgba(139, 155, 180, 0.24);
+  }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      background: var(--navy);
-      color: var(--t1);
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
-    }
+  html { scroll-behavior: smooth; }
 
-    /* ── Scrollbar ── */
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+  body {
+    background: var(--navy);
+    color: var(--off-white);
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    font-feature-settings: 'ss01', 'cv01';
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
 
-    /* ── EQ Animation ── */
-    .eq-bar {
-      width: 3px;
-      border-radius: 2px;
-      background: var(--teal);
-      animation: eq 1.4s ease-in-out infinite;
-      transform-origin: bottom;
-      flex-shrink: 0;
-    }
-    @keyframes eq {
-      0%,100% { transform: scaleY(0.2); opacity: 0.35; }
-      50%      { transform: scaleY(1);   opacity: 1; }
-    }
-    .eq-bar:nth-child(1)  { height:12px; animation-delay:0s; }
-    .eq-bar:nth-child(2)  { height:22px; animation-delay:.12s; }
-    .eq-bar:nth-child(3)  { height:32px; animation-delay:.06s; }
-    .eq-bar:nth-child(4)  { height:18px; animation-delay:.24s; }
-    .eq-bar:nth-child(5)  { height:36px; animation-delay:.18s; }
-    .eq-bar:nth-child(6)  { height:28px; animation-delay:.3s; }
-    .eq-bar:nth-child(7)  { height:14px; animation-delay:.09s; }
-    .eq-bar:nth-child(8)  { height:34px; animation-delay:.21s; }
-    .eq-bar:nth-child(9)  { height:20px; animation-delay:.15s; }
-    .eq-bar:nth-child(10) { height:30px; animation-delay:.03s; }
-    .eq-bar:nth-child(11) { height:16px; animation-delay:.27s; }
-    .eq-bar:nth-child(12) { height:26px; animation-delay:.33s; }
+  /* === Typography helpers === */
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--teal-sky);
+  }
+  .eyebrow-muted { color: var(--t2); }
 
-    /* ── Drop zone ── */
-    .drop-zone {
-      border: 1px solid rgba(10,126,164,0.2);
-      border-radius: 16px;
-      transition: border-color .2s, background .2s;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-    }
-    .drop-zone:hover, .drop-zone.over {
-      border-color: rgba(10,126,164,0.55);
-      background: rgba(10,126,164,0.04);
-    }
+  h1, h2, h3, h4 {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--off-white);
+    text-wrap: balance;
+  }
+  h1 { font-size: clamp(40px, 5.4vw, 68px); line-height: 1.04; letter-spacing: -0.035em; font-weight: 900; }
+  h2 { font-size: clamp(30px, 3.4vw, 44px); line-height: 1.1; letter-spacing: -0.028em; }
+  h3 { font-size: 22px; line-height: 1.25; }
+  p { color: var(--t2); text-wrap: pretty; }
 
-    /* ── Tab pills ── */
-    .tab-pill {
-      padding: 5px 14px;
-      border-radius: 100px;
-      font-size: 12.5px;
-      font-weight: 500;
-      color: var(--t3);
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all .15s;
-      border: 1px solid transparent;
-      background: none;
-    }
-    .tab-pill:hover { color: var(--t2); }
-    .tab-pill.active {
-      background: rgba(10,126,164,0.12);
-      border-color: rgba(10,126,164,0.28);
-      color: var(--teal-sky);
-    }
-    .tab-pane { display: none; }
-    .tab-pane.active { display: block; }
+  a { color: inherit; text-decoration: none; }
 
-    /* ── Stage items ── */
-    .stage-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      padding: 7px 10px;
-      border-radius: 8px;
-      transition: background .2s;
-    }
-    .stage-row.active { background: rgba(10,126,164,0.08); }
+  .container {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
 
-    /* ── Pull quote ── */
-    .pull-quote {
-      position: relative;
-      padding: 20px 20px 16px 24px;
-      border-left: 2px solid rgba(10,126,164,0.35);
-      background: rgba(10,126,164,0.04);
-      border-radius: 0 8px 8px 0;
-    }
-    .pull-quote::before {
-      content: '\201C';
-      position: absolute;
-      top: -8px; left: 12px;
-      font-size: 56px;
-      color: rgba(10,126,164,0.25);
-      font-family: Georgia, serif;
-      line-height: 1;
-      pointer-events: none;
-    }
+  /* === Buttons === */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+    color: var(--off-white);
+    background: transparent;
+  }
+  .btn-primary {
+    background: var(--teal);
+    border-color: var(--teal-sky);
+    box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.1), 0 10px 24px -10px rgba(10, 126, 164, 0.55);
+  }
+  .btn-primary:hover {
+    background: #0d8fbb;
+    box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.4), 0 12px 30px -10px rgba(56, 189, 248, 0.6);
+    transform: translateY(-1px);
+  }
+  .btn-ghost {
+    background: transparent;
+    border-color: var(--border-strong);
+    color: var(--off-white);
+  }
+  .btn-ghost:hover { border-color: var(--teal-sky); color: var(--teal-sky); }
+  .btn-outline {
+    background: transparent;
+    border-color: var(--teal);
+    color: var(--teal-sky);
+  }
+  .btn-outline:hover { background: rgba(10, 126, 164, 0.12); }
 
-    /* ── Script stage (cold open) ── */
-    .script-stage {
-      background: var(--navy-mid);
-      border: 1px solid rgba(255,255,255,0.05);
-      border-radius: 14px;
-      position: relative;
-      overflow: hidden;
-    }
-    .script-stage::before {
-      content: '';
-      position: absolute;
-      top: -80px; left: 50%;
-      transform: translateX(-50%);
-      width: 340px; height: 220px;
-      background: radial-gradient(ellipse at 50% 0%, rgba(10,126,164,0.14), transparent 68%);
-      pointer-events: none;
-    }
+  /* === Navigation === */
+  nav.topnav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(13, 31, 60, 0.85);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: -0.015em;
+  }
+  .eq-bars {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 22px;
+  }
+  .eq-bars span {
+    width: 3px;
+    background: var(--teal-sky);
+    border-radius: 1px;
+    animation: bounce 1.1s ease-in-out infinite;
+  }
+  .eq-bars span:nth-child(1) { height: 60%; animation-delay: 0s; }
+  .eq-bars span:nth-child(2) { height: 90%; animation-delay: 0.1s; }
+  .eq-bars span:nth-child(3) { height: 40%; animation-delay: 0.2s; }
+  .eq-bars span:nth-child(4) { height: 70%; animation-delay: 0.3s; }
+  .eq-bars span:nth-child(5) { height: 50%; animation-delay: 0.4s; }
+  @keyframes bounce {
+    0%, 100% { transform: scaleY(0.5); opacity: 0.8; }
+    50% { transform: scaleY(1.1); opacity: 1; }
+  }
 
-    /* ── Flag cards ── */
-    .flag-card {
-      padding: 12px 14px;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.02);
-      border: 1px solid rgba(255,255,255,0.05);
-      margin-bottom: 8px;
-    }
-    .flag-card.high   { border-left: 3px solid var(--red); }
-    .flag-card.medium { border-left: 3px solid var(--amber); }
-    .flag-card.low    { border-left: 3px solid var(--green); }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+  }
+  .nav-links a {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--t2);
+    transition: color 0.15s ease;
+  }
+  .nav-links a:hover { color: var(--off-white); }
+  .nav-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--green);
+  }
+  .nav-status .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+  }
 
-    /* ── Transcript grid ── */
-    .tx-row {
-      display: grid;
-      grid-template-columns: 44px 100px 1fr;
-      gap: 10px;
-      padding: 7px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      align-items: baseline;
-    }
-    .tx-row:last-child { border-bottom: none; }
+  /* === HERO === */
+  .hero {
+    position: relative;
+    padding: 80px 0 60px;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: "";
+    position: absolute;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1100px;
+    height: 600px;
+    background: radial-gradient(ellipse at center, var(--teal-glow), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .hero-grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 60px;
+    align-items: center;
+  }
+  .hero h1 .accent {
+    color: var(--teal-sky);
+    display: block;
+  }
+  .hero .subhead {
+    margin-top: 24px;
+    font-size: 17px;
+    line-height: 1.55;
+    max-width: 540px;
+    color: var(--t2);
+  }
+  .hero-ctas {
+    display: flex;
+    gap: 12px;
+    margin-top: 36px;
+  }
+  .trust-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-top: 44px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+  }
+  .trust-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--t2);
+  }
+  .trust-item .check {
+    color: var(--teal-sky);
+    font-weight: 700;
+  }
 
-    /* ── Chapter rows ── */
-    .ch-row {
-      display: grid;
-      grid-template-columns: 52px 1fr;
-      gap: 14px;
-      padding: 16px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      align-items: start;
-    }
-    .ch-row:last-child { border-bottom: none; }
+  /* === Hero pipeline visual === */
+  .pipeline-viz {
+    position: relative;
+    background: linear-gradient(180deg, var(--navy-mid), var(--navy-deep));
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    padding: 28px 24px;
+    box-shadow: 0 30px 60px -30px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  .pipeline-viz::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+    pointer-events: none;
+    box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.04) inset;
+  }
+  .pipeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid var(--border);
+  }
+  .pipeline-header .filename {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: var(--t2);
+  }
+  .pipeline-header .filename strong { color: var(--off-white); font-weight: 500; }
+  .pipeline-header .elapsed {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--teal-sky);
+  }
 
-    /* ── Mono / timestamp ── */
-    .mono {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: var(--teal);
-      letter-spacing: .04em;
-    }
+  /* Waveform */
+  .waveform {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-bottom: 22px;
+    padding: 0 4px;
+  }
+  .waveform span {
+    flex: 1;
+    background: linear-gradient(180deg, var(--teal-sky), var(--teal));
+    opacity: 0.55;
+    border-radius: 1px;
+    min-height: 4px;
+    transform-origin: center;
+    animation: wave 2.4s ease-in-out infinite;
+  }
+  @keyframes wave {
+    0%, 100% { transform: scaleY(0.5); }
+    50% { transform: scaleY(1); }
+  }
 
-    /* ── Score bar ── */
-    .sbar { height: 3px; border-radius: 2px; transition: width 1s ease-out; }
+  /* 7 stage dots */
+  .stage-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .stage-row::before {
+    content: "";
+    position: absolute;
+    left: 5%;
+    right: 5%;
+    top: 6px;
+    height: 1px;
+    background: var(--border-strong);
+    z-index: 0;
+  }
+  .stage-dot {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    z-index: 1;
+  }
+  .stage-dot .ball {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: var(--navy-up);
+    border: 1px solid var(--border-strong);
+    transition: all 0.3s ease;
+  }
+  .stage-dot.done .ball {
+    background: var(--teal-sky);
+    border-color: var(--teal-sky);
+    box-shadow: 0 0 12px var(--teal-glow);
+  }
+  .stage-dot.active .ball {
+    background: var(--teal-sky);
+    border-color: var(--teal-sky);
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.6); }
+    50% { box-shadow: 0 0 0 6px rgba(56, 189, 248, 0); }
+  }
+  .stage-dot .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--t3);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    line-height: 1.2;
+  }
+  .stage-dot.done .label, .stage-dot.active .label { color: var(--off-white); }
 
-    /* ── Rec blink ── */
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.15} }
-    .blink { animation: blink 1s ease-in-out infinite; }
+  /* Output cards */
+  .output-stack {
+    display: grid;
+    gap: 10px;
+  }
+  .out-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    background: var(--navy-up);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    border-left: 2px solid var(--teal-sky);
+    opacity: 0;
+    transform: translateX(8px);
+    animation: slideIn 0.6s ease forwards;
+  }
+  .out-card:nth-child(1) { animation-delay: 0.2s; }
+  .out-card:nth-child(2) { animation-delay: 0.5s; }
+  .out-card:nth-child(3) { animation-delay: 0.8s; }
+  @keyframes slideIn {
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .out-card .icon {
+    width: 26px; height: 26px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    color: var(--teal-sky);
+  }
+  .out-card .meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .out-card .meta .title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--off-white);
+  }
+  .out-card .meta .sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--t3);
+  }
+  .out-card .badge-score {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--green);
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
 
-    /* ── Progress track ── */
-    .progress-track { height: 2px; background: rgba(255,255,255,0.06); border-radius:1px; overflow:hidden; }
-    .progress-fill  { height:100%; background: linear-gradient(90deg, var(--teal), var(--teal-sky)); border-radius:1px; transition: width .5s ease-out; }
+  /* === Section common === */
+  section {
+    padding: 100px 0;
+    position: relative;
+  }
+  .section-head {
+    max-width: 720px;
+    margin-bottom: 60px;
+  }
+  .section-head .eyebrow { display: block; margin-bottom: 14px; }
+  .section-head h2 { margin-bottom: 16px; }
+  .section-head p { font-size: 17px; max-width: 600px; }
 
-    /* ── Fade up ── */
-    .fade-up { animation: fade-up .35s ease-out; }
-    @keyframes fade-up { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  /* === Problem section === */
+  .problem { background: var(--navy-deep); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .problem-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 40px;
+  }
+  .problem-col {
+    padding: 32px 28px;
+    border-right: 1px solid var(--border);
+    background: var(--navy-mid);
+  }
+  .problem-col:last-child { border-right: none; background: rgba(239, 68, 68, 0.04); }
+  .problem-col .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--t3);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 14px;
+  }
+  .problem-col .value {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--off-white);
+    line-height: 1.4;
+  }
+  .problem-col .sub {
+    font-size: 13px;
+    color: var(--t2);
+    margin-top: 8px;
+  }
+  .problem-col.bad .value { color: var(--red); }
+  .arrow-flow {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--amber);
+    font-size: 11px;
+    margin-top: 12px;
+  }
 
-    /* ── Speaker colours ── */
-    .spk0 { color: var(--teal-sky); }
-    .spk1 { color: var(--purple); }
-    .spk2 { color: #34D399; }
+  .callout {
+    background: var(--navy-mid);
+    border: 1px solid var(--border-strong);
+    border-left: 3px solid var(--amber);
+    padding: 28px 32px;
+    border-radius: 4px;
+    position: relative;
+  }
+  .callout::before {
+    content: """;
+    position: absolute;
+    top: 8px;
+    left: 18px;
+    font-size: 64px;
+    color: var(--amber);
+    opacity: 0.4;
+    font-family: Georgia, serif;
+    line-height: 1;
+  }
+  .callout p {
+    font-size: 19px;
+    font-weight: 500;
+    color: var(--off-white);
+    line-height: 1.4;
+    font-style: italic;
+    padding-left: 32px;
+    max-width: 800px;
+  }
+  .transition-line {
+    margin-top: 36px;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--off-white);
+    letter-spacing: -0.015em;
+  }
+  .transition-line::after {
+    content: "↓";
+    color: var(--teal-sky);
+    margin-left: 10px;
+    display: inline-block;
+    animation: bob 2s ease-in-out infinite;
+  }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(4px); }
+  }
 
-    /* ── Inline error banner ── */
-    .err-banner {
-      display: none;
-      align-items: flex-start;
-      gap: 10px;
-      padding: 11px 14px;
-      border-radius: 9px;
-      background: rgba(239,68,68,0.08);
-      border: 1px solid rgba(239,68,68,0.22);
-      margin-top: 10px;
-    }
-    .err-banner.visible { display: flex; }
+  /* === Feature cards === */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  .feature-card {
+    background: var(--navy-mid);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 32px;
+    position: relative;
+    transition: all 0.2s ease;
+    overflow: hidden;
+  }
+  .feature-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at top left, var(--teal-glow), transparent 50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  .feature-card:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-2px);
+  }
+  .feature-card:hover::before { opacity: 0.5; }
+  .feature-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 6px;
+    background: rgba(10, 126, 164, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    display: grid;
+    place-items: center;
+    color: var(--teal-sky);
+    margin-bottom: 24px;
+  }
+  .feature-card h3 {
+    font-size: 22px;
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+  }
+  .feature-card p {
+    font-size: 14.5px;
+    line-height: 1.6;
+  }
+  .feature-card .card-num {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--t3);
+    letter-spacing: 0.06em;
+  }
 
-    /* ── Copy button ── */
-    .copy-btn {
-      padding: 4px 10px;
-      border-radius: 6px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: var(--t3);
-      font-size: 11px;
-      font-weight: 500;
-      cursor: pointer;
-      font-family: inherit;
-      transition: color .15s, border-color .15s;
-    }
-    .copy-btn:hover { color: var(--t2); border-color: rgba(255,255,255,0.15); }
-  </style>
+  /* === How it works === */
+  .how-section { background: var(--navy-deep); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .step {
+    background: var(--navy-mid);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px;
+    position: relative;
+  }
+  .step-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--teal-sky);
+    letter-spacing: 0.16em;
+    margin-bottom: 18px;
+  }
+  .step h3 { font-size: 19px; margin-bottom: 10px; }
+  .step p { font-size: 14px; line-height: 1.6; margin-bottom: 22px; }
+  .step .visual {
+    margin-top: auto;
+    background: var(--navy-deep);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px;
+    min-height: 120px;
+    display: grid;
+    place-items: center;
+  }
+
+  /* Step 1 visual - drop zone */
+  .mini-dropzone {
+    width: 100%;
+    border: 1.5px dashed var(--teal);
+    border-radius: 4px;
+    padding: 18px;
+    text-align: center;
+  }
+  .mini-dropzone .mono {
+    font-size: 10.5px;
+    color: var(--teal-sky);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .mini-dropzone .file {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--off-white);
+    font-weight: 500;
+  }
+  .mini-dropzone .size {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--t3);
+    margin-top: 2px;
+  }
+
+  /* Step 2 visual - pipeline dots */
+  .mini-pipeline {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .mini-stage {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--t2);
+  }
+  .mini-stage .icon {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--navy-up);
+    border: 1px solid var(--border-strong);
+    flex-shrink: 0;
+  }
+  .mini-stage.done .icon { background: var(--green); border-color: var(--green); }
+  .mini-stage.active .icon { background: var(--teal-sky); border-color: var(--teal-sky); animation: pulse 1.2s infinite; }
+  .mini-stage.done, .mini-stage.active { color: var(--off-white); }
+  .mini-stage .timing {
+    margin-left: auto;
+    color: var(--t3);
+    font-size: 9.5px;
+  }
+
+  /* Step 3 visual - tab pills */
+  .mini-tabs {
+    width: 100%;
+  }
+  .mini-tabs-row {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .mini-tab {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--border-strong);
+    color: var(--t2);
+  }
+  .mini-tab.active {
+    background: var(--teal);
+    border-color: var(--teal-sky);
+    color: var(--off-white);
+  }
+  .mini-content {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    color: var(--t2);
+    line-height: 1.55;
+    background: var(--navy);
+    border: 1px solid var(--border);
+    padding: 10px;
+    border-radius: 3px;
+    border-left: 2px solid var(--teal-sky);
+  }
+  .mini-content em { color: var(--off-white); font-style: normal; font-weight: 600; }
+
+  /* === Quality score showcase === */
+  .qs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.05fr;
+    gap: 60px;
+    align-items: center;
+  }
+  .qs-copy h2 { margin-bottom: 24px; }
+  .qs-copy p {
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 18px;
+  }
+  .qs-copy p:last-child { margin-bottom: 0; }
+
+  .qs-mock {
+    background: var(--navy-mid);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    padding: 32px;
+    box-shadow: 0 30px 60px -30px rgba(0,0,0,0.5);
+  }
+  .qs-mock-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 26px;
+  }
+  .qs-score-big {
+    font-family: 'Inter', sans-serif;
+    font-size: 64px;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    color: var(--off-white);
+    line-height: 1;
+  }
+  .qs-score-big .denom {
+    color: var(--t3);
+    font-weight: 500;
+    font-size: 24px;
+  }
+  .qs-score-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--t3);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .qs-grade {
+    text-align: right;
+  }
+  .qs-grade .grade {
+    font-family: 'Inter', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--amber);
+    letter-spacing: -0.02em;
+  }
+  .qs-grade .verdict {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--t3);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .qs-dims {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 26px;
+  }
+  .qs-dim {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: center;
+  }
+  .qs-dim-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--off-white);
+  }
+  .qs-dim-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--t2);
+  }
+  .qs-bar {
+    grid-column: 1 / -1;
+    height: 3px;
+    background: var(--navy-deep);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .qs-bar-fill {
+    height: 100%;
+    background: var(--teal-sky);
+    border-radius: 2px;
+    transform-origin: left;
+    animation: barFill 1.4s ease-out forwards;
+  }
+  @keyframes barFill {
+    from { transform: scaleX(0); }
+  }
+  .qs-flag {
+    padding: 16px 18px;
+    background: rgba(245, 158, 11, 0.06);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-left: 3px solid var(--amber);
+    border-radius: 4px;
+  }
+  .qs-flag-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .qs-flag-sev {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    font-weight: 600;
+    color: var(--amber);
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    padding: 2px 6px;
+    border-radius: 2px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .qs-flag-ts {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--t2);
+  }
+  .qs-flag-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--off-white);
+    margin-bottom: 4px;
+  }
+  .qs-flag-sug {
+    font-size: 13px;
+    color: var(--t2);
+    line-height: 1.55;
+  }
+  .qs-flag-sug strong { color: var(--off-white); font-weight: 500; }
+
+  /* === Compliance strip === */
+  .compliance-strip {
+    background: var(--navy-deep);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .compliance-head {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 32px;
+    align-items: center;
+    margin-bottom: 48px;
+  }
+  .lock-icon {
+    width: 64px;
+    height: 64px;
+    border: 1px solid var(--teal);
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    color: var(--teal-sky);
+    background: rgba(10, 126, 164, 0.08);
+  }
+  .compliance-head h2 { margin-bottom: 4px; }
+  .compliance-head .eyebrow { display: block; margin-bottom: 10px; }
+  .compliance-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .compliance-item {
+    padding: 24px 28px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: var(--navy-mid);
+  }
+  .compliance-item:nth-child(3n) { border-right: none; }
+  .compliance-item:nth-last-child(-n+3) { border-bottom: none; }
+  .ci-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: var(--green);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .ci-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--off-white);
+    line-height: 1.4;
+  }
+
+  /* === Use cases === */
+  .use-cases {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .use-case {
+    padding: 32px 28px;
+    background: var(--navy-mid);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    border-top: 2px solid var(--teal);
+  }
+  .use-case h3 {
+    font-size: 18px;
+    margin-bottom: 14px;
+  }
+  .use-case p { font-size: 14px; line-height: 1.6; }
+
+  /* === Final CTA === */
+  .final-cta {
+    background: linear-gradient(180deg, var(--navy-deep), var(--navy));
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 100px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .final-cta::before {
+    content: "";
+    position: absolute;
+    bottom: -300px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1000px;
+    height: 600px;
+    background: radial-gradient(ellipse at center, var(--teal-glow), transparent 60%);
+    pointer-events: none;
+  }
+  .final-cta-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .final-cta h2 { margin-bottom: 16px; }
+  .final-cta .sub { font-size: 17px; color: var(--t2); margin-bottom: 36px; }
+  .final-cta .cta-row { display: flex; gap: 12px; justify-content: center; margin-bottom: 40px; }
+  .reassure-row {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .reassure-row .trust-item { font-size: 13px; }
+
+  /* === Footer === */
+  footer {
+    background: var(--navy-deep);
+    border-top: 1px solid var(--border);
+    padding: 64px 0 32px;
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: 48px;
+    margin-bottom: 48px;
+  }
+  .footer-brand .logo { margin-bottom: 16px; }
+  .footer-brand p { font-size: 13.5px; max-width: 280px; line-height: 1.55; }
+  .footer-col h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--t3);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .footer-col ul { list-style: none; display: grid; gap: 10px; }
+  .footer-col a {
+    font-size: 13.5px;
+    color: var(--t2);
+    transition: color 0.15s ease;
+  }
+  .footer-col a:hover { color: var(--teal-sky); }
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--t3);
+  }
+  .footer-bottom a { color: var(--t3); margin-left: 24px; }
+  .footer-bottom a:hover { color: var(--off-white); }
+
+  /* Responsive */
+  @media (max-width: 980px) {
+    .hero-grid, .qs-grid { grid-template-columns: 1fr; gap: 40px; }
+    .features-grid, .problem-grid, .steps, .use-cases, .compliance-grid { grid-template-columns: 1fr; }
+    .problem-grid .problem-col { border-right: none; border-bottom: 1px solid var(--border); }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+    .nav-links { display: none; }
+    section { padding: 64px 0; }
+    .container { padding: 0 20px; }
+    .compliance-item { border-right: none !important; border-bottom: 1px solid var(--border) !important; }
+    .compliance-head { grid-template-columns: 1fr; gap: 16px; }
+  }
+</style>
 </head>
 <body>
 
-<!-- ════════════════════════════ HEADER ═══════════════════════════ -->
-<header style="border-bottom:1px solid rgba(255,255,255,0.05);padding:0 24px;position:sticky;top:0;background:var(--navy);z-index:20;">
-  <div style="max-width:800px;margin:0 auto;height:50px;display:flex;align-items:center;justify-content:space-between;">
-
-    <!-- Wordmark -->
-    <div style="display:flex;align-items:center;gap:9px;">
-      <div style="display:flex;align-items:flex-end;gap:2px;height:16px;">
-        <div style="width:2.5px;height:7px; background:var(--teal);border-radius:2px;"></div>
-        <div style="width:2.5px;height:13px;background:var(--teal);border-radius:2px;"></div>
-        <div style="width:2.5px;height:16px;background:var(--teal);border-radius:2px;"></div>
-        <div style="width:2.5px;height:11px;background:var(--teal);border-radius:2px;"></div>
-        <div style="width:2.5px;height:14px;background:var(--teal);border-radius:2px;"></div>
-      </div>
-      <span style="font-size:13.5px;font-weight:700;letter-spacing:-.02em;color:var(--t1);">Podcast Intelligence</span>
-    </div>
-
-    <!-- Status badge — updated from /api/health on load -->
-    <div id="status-badge" style="display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;border:1px solid rgba(16,185,129,.25);background:rgba(16,185,129,.05);">
-      <div id="status-dot" style="width:5px;height:5px;border-radius:50%;background:var(--green);"></div>
-      <span id="status-text" style="font-size:10.5px;color:#34D399;font-weight:600;letter-spacing:.05em;">LOCAL</span>
+<!-- ============== NAV ============== -->
+<nav class="topnav" data-screen-label="01 Nav">
+  <div class="nav-inner">
+    <a href="#" class="logo">
+      <div class="eq-bars"><span></span><span></span><span></span><span></span><span></span></div>
+      <span>Podcast Intelligence</span>
+    </a>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="/compliance">Compliance</a>
+      <span id="status-badge" class="nav-status"><span id="status-dot" class="dot"></span><span id="status-text">LOCAL</span></span>
+      <a href="/app" class="btn btn-primary">Open Studio →</a>
     </div>
   </div>
-</header>
+</nav>
 
-
-<!-- ════════════════════════════ UPLOAD ══════════════════════════ -->
-<section id="s-upload" style="min-height:calc(100vh - 50px);display:flex;align-items:center;justify-content:center;padding:48px 24px;">
-  <div style="width:100%;max-width:520px;">
-
-    <div style="text-align:center;margin-bottom:36px;">
-      <h1 style="font-size:clamp(26px,5vw,40px);font-weight:900;letter-spacing:-.035em;line-height:1.08;color:var(--t1);margin-bottom:12px;">
-        What happened in<br/>this episode?
-      </h1>
-      <p style="font-size:13.5px;color:var(--t2);line-height:1.65;">
-        Drop any episode. Get show notes, chapters, a cold open script<br/>— and an honest producer's critique — in minutes.
-      </p>
-    </div>
-
-    <!-- Drop zone -->
-    <div id="dz" class="drop-zone" style="padding:44px 28px;text-align:center;">
-
-      <!-- Wave decoration -->
-      <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:.025;pointer-events:none;" viewBox="0 0 520 180" preserveAspectRatio="none">
-        <polyline fill="none" stroke="white" stroke-width="1.5"
-          points="0,90 25,68 50,105 75,48 100,108 125,58 150,94 175,42 200,102 225,72 250,90 275,52 300,98 325,38 350,92 375,66 400,88 425,44 450,104 475,70 500,86 520,90"/>
-      </svg>
-
-      <input id="fi" type="file" accept="audio/*" style="display:none;" />
-
-      <div id="dz-idle">
-        <svg style="width:36px;height:36px;color:var(--t3);margin:0 auto 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
-        </svg>
-        <p style="font-weight:600;font-size:14.5px;margin-bottom:5px;">Drop your audio here</p>
-        <p style="font-size:12px;color:var(--t3);margin-bottom:18px;">MP3 · WAV · M4A · OGG · FLAC</p>
-        <button onclick="event.stopPropagation(); document.getElementById('fi').click()"
-          style="padding:7px 18px;background:rgba(10,126,164,.14);border:1px solid rgba(10,126,164,.32);border-radius:8px;color:var(--teal-sky);font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit;">
-          Browse files
-        </button>
+<!-- ============== HERO ============== -->
+<section class="hero" data-screen-label="02 Hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow eyebrow-muted">ON-PREMISE AI PODCAST PRODUCTION</span>
+        <h1 style="margin-top: 18px;">
+          Your briefings. Fully analysed.
+          <span class="accent">Never leaves the building.</span>
+        </h1>
+        <p class="subhead">
+          Health organisations record dozens of briefings every month — clinical updates, safety notices, staff comms. Every tool that could help publish them sends your audio to an external server. This one doesn't.
+        </p>
+        <div class="hero-ctas">
+          <a href="/app" class="btn btn-primary">Open Studio →</a>
+          <a href="#how" class="btn btn-ghost">See how it works</a>
+        </div>
+        <div class="trust-strip">
+          <div class="trust-item"><span class="check">✓</span>Runs entirely on your servers</div>
+          <div class="trust-item"><span class="check">✓</span>No audio processed externally</div>
+          <div class="trust-item"><span class="check">✓</span>NZ HIPC compliant deployment</div>
+        </div>
       </div>
 
-      <div id="dz-sel" style="display:none;">
-        <div style="width:38px;height:38px;border-radius:50%;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">
-          <svg style="width:16px;height:16px;color:var(--green);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+      <!-- Hero pipeline visual -->
+      <div class="pipeline-viz">
+        <div class="pipeline-header">
+          <div class="filename">Episode: <strong>weekly-clinical-briefing-038.wav</strong></div>
+          <div class="elapsed mono">● PROCESSING  03:42</div>
+        </div>
+
+        <div class="waveform" id="hero-waveform"></div>
+
+        <div class="stage-row">
+          <div class="stage-dot done"><div class="ball"></div><div class="label">Transcribe</div></div>
+          <div class="stage-dot done"><div class="ball"></div><div class="label">Diarise</div></div>
+          <div class="stage-dot done"><div class="ball"></div><div class="label">Research</div></div>
+          <div class="stage-dot done"><div class="ball"></div><div class="label">Show notes</div></div>
+          <div class="stage-dot active"><div class="ball"></div><div class="label">Chapters</div></div>
+          <div class="stage-dot"><div class="ball"></div><div class="label">Cold open</div></div>
+          <div class="stage-dot"><div class="ball"></div><div class="label">Quality</div></div>
+        </div>
+
+        <div class="output-stack">
+          <div class="out-card">
+            <div class="icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+            </div>
+            <div class="meta">
+              <span class="title">Show notes generated</span>
+              <span class="sub">5 themes · 7 notable moments · 4 pull quotes</span>
+            </div>
+          </div>
+          <div class="out-card">
+            <div class="icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+            <div class="meta">
+              <span class="title">Chapter markers · 6 detected</span>
+              <span class="sub">00:00 · 04:12 · 09:47 · 14:31 · 19:08 · 24:55</span>
+            </div>
+          </div>
+          <div class="out-card">
+            <div class="icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-5"/></svg>
+            </div>
+            <div class="meta">
+              <span class="title">Quality score draft</span>
+              <span class="sub">awaiting final dimensions</span>
+            </div>
+            <span class="badge-score">7.4</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== PROBLEM ============== -->
+<section class="problem" data-screen-label="03 Problem">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">THE PROBLEM</span>
+      <h2>Every other tool is a compliance breach waiting to happen.</h2>
+      <p>ElevenLabs. Descript. Riverside. Adobe Podcast. They're all excellent tools — and they all process your audio on their servers. In most health environments, uploading that audio isn't just a policy question. It's a notifiable privacy breach.</p>
+    </div>
+
+    <div class="problem-grid">
+      <div class="problem-col">
+        <div class="label">Your audio</div>
+        <div class="value">A clinical briefing recording</div>
+        <div class="sub">Patient references · staff names · operational detail</div>
+      </div>
+      <div class="problem-col">
+        <div class="label">→ Sends externally</div>
+        <div class="value">Cloud transcription &amp; generation</div>
+        <div class="sub">Audio uploaded to vendor servers offshore</div>
+        <div class="arrow-flow">─── crosses your network boundary ───→</div>
+      </div>
+      <div class="problem-col bad">
+        <div class="label">Result</div>
+        <div class="value">Notifiable privacy breach</div>
+        <div class="sub">Under the NZ Health Information Privacy Code</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <p>One clinical briefing. Uploaded to a cloud transcription service. That's a potential breach under the NZ Health Information Privacy Code.</p>
+    </div>
+
+    <div class="transition-line">We built the alternative.</div>
+  </div>
+</section>
+
+<!-- ============== FEATURES ============== -->
+<section id="features" data-screen-label="04 Features">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">WHAT IT DOES</span>
+      <h2>Everything a producer needs. Nothing that leaves your network.</h2>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="card-num">01</span>
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M2 12h2M6 8v8M10 5v14M14 9v6M18 7v10M22 11v2"/>
           </svg>
         </div>
-        <p id="dz-name" style="font-weight:600;font-size:14.5px;margin-bottom:3px;"></p>
-        <p id="dz-size" style="font-size:11.5px;color:var(--t3);"></p>
+        <h3>Upload a recording. Get back everything.</h3>
+        <p>Drop any audio file and the pipeline runs seven AI stages in sequence — transcription, speaker identification, show notes, chapter markers, a cold open script, and an editorial quality score. Under five minutes for a standard briefing.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="card-num">02</span>
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8"/>
+          </svg>
+        </div>
+        <h3>Clone any voice. Generate broadcast-quality audio.</h3>
+        <p>Record a 30-second voice sample. The studio clones it and reads any script back in that voice — post-processed to broadcast loudness standards. Single narrator or a two-speaker conversation.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="card-num">03</span>
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M3 21V8M9 21V3M15 21v-9M21 21V5"/><path d="M3 21h18"/><circle cx="15" cy="9" r="2" fill="currentColor"/>
+          </svg>
+        </div>
+        <h3>An honest producer's critique of every episode.</h3>
+        <p>Not a summary — an editorial opinion. The quality score rates each episode on information density, pacing, clarity, and memorability. It flags the exact timestamp where something went wrong, and tells you how to fix it before the next recording.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="card-num">04</span>
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="3" y="4" width="18" height="6" rx="1"/><rect x="3" y="14" width="18" height="6" rx="1"/><path d="M7 7h.01M7 17h.01M21 12H3"/>
+          </svg>
+        </div>
+        <h3>One environment variable. Zero external calls.</h3>
+        <p>Switch between cloud generation and a fully local LLM backend without touching the application code. Same interface, same output. For fully air-gapped deployments, the entire stack — transcription, generation, and voice synthesis — runs on your own hardware.</p>
       </div>
     </div>
-
-    <!-- Guest name -->
-    <div style="margin-top:14px;">
-      <label style="font-size:10.5px;color:var(--t3);letter-spacing:.07em;font-weight:600;display:block;margin-bottom:6px;">
-        GUEST NAME <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional · triggers research stage)</span>
-      </label>
-      <input id="guest" type="text" placeholder="e.g. Lex Fridman"
-        style="width:100%;padding:10px 13px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:8px;color:var(--t1);font-size:13.5px;font-family:inherit;outline:none;transition:border-color .2s;"
-        onfocus="this.style.borderColor='rgba(10,126,164,.45)'"
-        onblur="this.style.borderColor='rgba(255,255,255,.08)'" />
-    </div>
-
-    <button id="run-btn" disabled onclick="go()"
-      style="width:100%;margin-top:14px;padding:13px;background:var(--teal);border:none;border-radius:10px;color:#fff;font-size:14.5px;font-weight:700;cursor:pointer;letter-spacing:-.01em;opacity:.25;transition:opacity .2s;font-family:inherit;">
-      Analyse episode →
-    </button>
-
-    <!-- Inline upload error -->
-    <div id="upload-err" class="err-banner" role="alert">
-      <svg style="width:15px;height:15px;color:var(--red);flex-shrink:0;margin-top:1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-      </svg>
-      <span id="upload-err-msg" style="font-size:12.5px;color:#FCA5A5;line-height:1.5;"></span>
-    </div>
-
   </div>
 </section>
 
-
-<!-- ════════════════════════════ PROCESSING ══════════════════════ -->
-<section id="s-proc" style="display:none;min-height:calc(100vh - 50px);align-items:center;justify-content:center;padding:48px 24px;">
-  <div style="width:100%;max-width:480px;text-align:center;">
-
-    <div style="display:flex;align-items:flex-end;justify-content:center;gap:3px;height:44px;margin-bottom:30px;">
-      <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
-      <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
-      <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
-      <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+<!-- ============== HOW IT WORKS ============== -->
+<section id="how" class="how-section" data-screen-label="05 How it works">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">THE PROCESS</span>
+      <h2>From raw audio to publication-ready content in minutes.</h2>
     </div>
 
-    <div id="p-label" style="font-size:20px;font-weight:800;letter-spacing:-.025em;margin-bottom:5px;">Starting…</div>
-    <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:28px;">
-      <div id="p-file"    style="font-size:12px;color:var(--t3);font-family:'JetBrains Mono',monospace;"></div>
-      <div id="p-elapsed" style="font-size:12px;color:var(--t3);font-family:'JetBrains Mono',monospace;"></div>
-    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">STEP 01</div>
+        <h3>Drop your audio</h3>
+        <p>Upload any recording — MP3, WAV, M4A, or OGG. Drag it in or browse. Add a guest name if you want the research stage to run.</p>
+        <div class="visual">
+          <div class="mini-dropzone">
+            <div class="mono">DROP AUDIO HERE</div>
+            <div class="file">briefing-week-38.wav</div>
+            <div class="size">26.4 MB · 28:14</div>
+          </div>
+        </div>
+      </div>
 
-    <div class="progress-track" style="margin-bottom:22px;">
-      <div id="p-bar" class="progress-fill" style="width:0%;"></div>
-    </div>
+      <div class="step">
+        <div class="step-num">STEP 02</div>
+        <h3>Seven AI stages run in sequence</h3>
+        <p>Transcription. Diarisation. Research. Show notes. Chapters. Cold open. Quality score. You watch them complete in real time.</p>
+        <div class="visual">
+          <div class="mini-pipeline">
+            <div class="mini-stage done"><div class="icon"></div><span>Transcription</span><span class="timing">28s</span></div>
+            <div class="mini-stage done"><div class="icon"></div><span>Diarisation</span><span class="timing">14s</span></div>
+            <div class="mini-stage done"><div class="icon"></div><span>Show notes</span><span class="timing">42s</span></div>
+            <div class="mini-stage active"><div class="icon"></div><span>Chapters</span><span class="timing">running…</span></div>
+            <div class="mini-stage"><div class="icon"></div><span>Cold open</span><span class="timing">pending</span></div>
+          </div>
+        </div>
+      </div>
 
-    <!-- Inline pipeline error -->
-    <div id="proc-err" class="err-banner" style="text-align:left;margin-bottom:16px;" role="alert">
-      <svg style="width:15px;height:15px;color:var(--red);flex-shrink:0;margin-top:1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-      </svg>
+      <div class="step">
+        <div class="step-num">STEP 03</div>
+        <h3>Results ready to use</h3>
+        <p>Five tabs of structured content — ready to copy, export, or send straight to the Voice Studio to synthesise the cold open in your own voice.</p>
+        <div class="visual">
+          <div class="mini-tabs">
+            <div class="mini-tabs-row">
+              <div class="mini-tab active">Cold Open</div>
+              <div class="mini-tab">Quality</div>
+              <div class="mini-tab">Show notes</div>
+              <div class="mini-tab">Chapters</div>
+              <div class="mini-tab">Transcript</div>
+            </div>
+            <div class="mini-content">
+              <em>"Most week-38 briefings open with the headcount —</em> this one opens with a near-miss in theatre 4 and what it tells us about handover protocols…"
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== QUALITY SCORE SHOWCASE ============== -->
+<section data-screen-label="06 Quality Score">
+  <div class="container">
+    <div class="qs-grid">
+      <div class="qs-copy">
+        <span class="eyebrow">QUALITY SCORE</span>
+        <h2 style="margin-top: 14px;">Not just a summary. <span style="color: var(--teal-sky);">An editorial opinion.</span></h2>
+        <p>Most AI tools tell you what was said. The quality score tells you what was wrong with how it was said.</p>
+        <p>It rates each episode across four dimensions — information density, pacing, clarity, and memorable moments — then flags the specific timestamps where problems occur. Each flag comes with a rewrite suggestion attached.</p>
+        <p>It doesn't soften the feedback. If the first six seconds are filler, it says so. If a sentence broke mid-thought, it shows you how to fix it.</p>
+        <p style="color: var(--off-white); font-weight: 500;">That's the tool a producer actually needs.</p>
+      </div>
+
+      <div class="qs-mock">
+        <div class="qs-mock-head">
+          <div>
+            <div class="qs-score-label">Overall score</div>
+            <div class="qs-score-big">5.75<span class="denom"> / 10</span></div>
+          </div>
+          <div class="qs-grade">
+            <div class="verdict">Verdict</div>
+            <div class="grade">Needs work</div>
+          </div>
+        </div>
+
+        <div class="qs-dims">
+          <div class="qs-dim">
+            <span class="qs-dim-name">Information density</span>
+            <span class="qs-dim-val">7.2 / 10</span>
+            <div class="qs-bar"><div class="qs-bar-fill" style="width: 72%; background: var(--green);"></div></div>
+          </div>
+          <div class="qs-dim">
+            <span class="qs-dim-name">Pacing</span>
+            <span class="qs-dim-val">4.1 / 10</span>
+            <div class="qs-bar"><div class="qs-bar-fill" style="width: 41%; background: var(--amber);"></div></div>
+          </div>
+          <div class="qs-dim">
+            <span class="qs-dim-name">Clarity</span>
+            <span class="qs-dim-val">6.8 / 10</span>
+            <div class="qs-bar"><div class="qs-bar-fill" style="width: 68%; background: var(--teal-sky);"></div></div>
+          </div>
+          <div class="qs-dim">
+            <span class="qs-dim-name">Memorable moments</span>
+            <span class="qs-dim-val">4.9 / 10</span>
+            <div class="qs-bar"><div class="qs-bar-fill" style="width: 49%; background: var(--amber);"></div></div>
+          </div>
+        </div>
+
+        <div class="qs-flag">
+          <div class="qs-flag-head">
+            <span class="qs-flag-sev">Medium</span>
+            <span class="qs-flag-ts">00:00 — 00:06</span>
+          </div>
+          <div class="qs-flag-title">Opening six seconds are filler</div>
+          <div class="qs-flag-sug"><strong>Suggestion:</strong> Cut "Hi everyone, welcome back to the weekly briefing, today we're going to be talking about…" — open instead on the near-miss in theatre 4. That's the strongest hook in the recording.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== COMPLIANCE STRIP ============== -->
+<section class="compliance-strip" data-screen-label="07 Compliance">
+  <div class="container">
+    <div class="compliance-head">
+      <div class="lock-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      </div>
       <div>
-        <div style="font-size:12.5px;font-weight:600;color:#FCA5A5;margin-bottom:3px;">Pipeline failed</div>
-        <div id="proc-err-msg" style="font-size:12px;color:rgba(252,165,165,.7);line-height:1.5;"></div>
-        <button onclick="reset()" style="margin-top:10px;padding:6px 14px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.28);border-radius:7px;color:#FCA5A5;font-size:11.5px;font-weight:500;cursor:pointer;font-family:inherit;">
-          ← Try another file
-        </button>
+        <span class="eyebrow">DATA SOVEREIGNTY</span>
+        <h2>Built for environments where data can't leave.</h2>
       </div>
+      <a href="/compliance" class="btn btn-outline">Read the full detail →</a>
     </div>
 
-    <div id="p-stages" style="text-align:left;"></div>
-
-  </div>
-</section>
-
-
-<!-- ════════════════════════════ RESULTS ════════════════════════ -->
-<section id="s-res" style="display:none;min-height:calc(100vh - 50px);padding-bottom:80px;">
-
-  <!-- Sticky results header -->
-  <div style="border-bottom:1px solid rgba(255,255,255,.05);padding:18px 24px;position:sticky;top:50px;background:var(--navy);z-index:10;">
-    <div style="max-width:760px;margin:0 auto;">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
-        <div style="flex:1;min-width:0;">
-          <h2 id="r-title" style="font-size:18px;font-weight:800;letter-spacing:-.025em;line-height:1.2;margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></h2>
-          <div id="r-meta" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;"></div>
-        </div>
-        <div style="display:flex;gap:7px;flex-shrink:0;">
-          <button onclick="_exportAll()"
-            style="padding:6px 12px;border:1px solid rgba(255,255,255,.09);border-radius:7px;background:none;color:var(--t3);font-size:11.5px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;">
-            <svg style="width:11px;height:11px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-            </svg>
-            Export
-          </button>
-          <button onclick="reset()"
-            style="padding:6px 12px;border:1px solid rgba(255,255,255,.09);border-radius:7px;background:none;color:var(--t3);font-size:11.5px;cursor:pointer;font-family:inherit;">
-            ← New episode
-          </button>
-        </div>
+    <div class="compliance-grid">
+      <div class="compliance-item">
+        <div class="ci-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <div class="ci-text">No audio sent to external APIs</div>
       </div>
-
-      <!-- Tabs — reordered: Cold Open → Quality → Show Notes → Chapters → Transcript -->
-      <div style="display:flex;gap:3px;overflow-x:auto;">
-        <button class="tab-pill" data-tab="cold-open"  onclick="tab('cold-open',this)">Cold Open</button>
-        <button class="tab-pill" data-tab="quality"    onclick="tab('quality',this)">Quality</button>
-        <button class="tab-pill" data-tab="show-notes" onclick="tab('show-notes',this)">Show Notes</button>
-        <button class="tab-pill" data-tab="chapters"   onclick="tab('chapters',this)">Chapters</button>
-        <button class="tab-pill" data-tab="transcript" onclick="tab('transcript',this)">Transcript</button>
+      <div class="compliance-item">
+        <div class="ci-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <div class="ci-text">Local LLM mode available</div>
+      </div>
+      <div class="compliance-item">
+        <div class="ci-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <div class="ci-text">Fully air-gapped deployment option</div>
+      </div>
+      <div class="compliance-item">
+        <div class="ci-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <div class="ci-text">No telemetry or call-home behaviour</div>
+      </div>
+      <div class="compliance-item">
+        <div class="ci-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <div class="ci-text">On-premise installation</div>
+      </div>
+      <div class="compliance-item">
+        <div class="ci-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <div class="ci-text">NZ HIPC aligned architecture</div>
       </div>
     </div>
   </div>
-
-  <!-- Panes -->
-  <div style="max-width:760px;margin:0 auto;padding:0 24px;">
-    <div id="tab-cold-open"  class="tab-pane" style="padding-top:34px;"><div id="co"></div></div>
-    <div id="tab-quality"    class="tab-pane" style="padding-top:34px;"><div id="qs"></div></div>
-    <div id="tab-show-notes" class="tab-pane" style="padding-top:34px;"><div id="sn"></div></div>
-    <div id="tab-chapters"   class="tab-pane" style="padding-top:34px;"><div id="ch"></div></div>
-    <div id="tab-transcript" class="tab-pane" style="padding-top:34px;"><div id="tx"></div></div>
-  </div>
-
 </section>
 
+<!-- ============== USE CASES ============== -->
+<section data-screen-label="08 Use cases">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">WHO IT'S FOR</span>
+      <h2>Built for organisations that record and brief regularly.</h2>
+    </div>
 
-<!-- ════════════════════════════ SCRIPT ═════════════════════════ -->
+    <div class="use-cases">
+      <div class="use-case">
+        <h3>Health sector</h3>
+        <p>Clinical teams, infection control leads, and comms managers producing weekly briefings for staff. Compliance rules out every cloud tool. This runs on your own infrastructure.</p>
+      </div>
+      <div class="use-case">
+        <h3>Government &amp; public sector</h3>
+        <p>Regular internal communications that contain sensitive operational content. Same compliance constraints, same solution.</p>
+      </div>
+      <div class="use-case">
+        <h3>Any organisation with an internal broadcast</h3>
+        <p>Legal, finance, education, professional services. If you record briefings that shouldn't leave your network, this runs locally wherever you need it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FINAL CTA ============== -->
+<section id="demo" class="final-cta" data-screen-label="09 Final CTA">
+  <div class="final-cta-inner">
+    <span class="eyebrow">TRY IT NOW</span>
+    <h2 style="margin-top: 14px;">Ready to analyse your first episode?</h2>
+    <p class="sub">Drop any audio file — briefing, interview, or podcast. Get show notes, chapters, a cold open, and a quality score in minutes.</p>
+    <div class="cta-row">
+      <a href="/app" class="btn btn-primary">Open Studio →</a>
+      <a href="/compliance" class="btn btn-ghost">Read the compliance detail</a>
+    </div>
+    <div class="reassure-row">
+      <div class="trust-item"><span class="check">✓</span>No cloud account required to trial</div>
+      <div class="trust-item"><span class="check">✓</span>Runs on standard server hardware</div>
+      <div class="trust-item"><span class="check">✓</span>Setup takes under an hour</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FOOTER ============== -->
+<footer data-screen-label="10 Footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#" class="logo">
+          <div class="eq-bars"><span></span><span></span><span></span><span></span><span></span></div>
+          <span>Podcast Intelligence</span>
+        </a>
+        <p>AI podcast production for organisations that can't use the cloud.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="/features">Features</a></li>
+          <li><a href="#how">How it works</a></li>
+          <li><a href="/compliance">Compliance</a></li>
+          <li><a href="#">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="#">Setup guide</a></li>
+          <li><a href="#">API docs</a></li>
+          <li><a href="#">Architecture overview</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Get in touch</h4>
+        <ul>
+          <li><a href="/app">Open Studio</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 Podcast Intelligence · Built in New Zealand</div>
+      <div>
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
 <script>
-
-const STEP_LABELS = {
-  transcribing:           'Transcribing audio',
-  diarising:              'Identifying speakers',
-  researching_guest:      'Researching guest',
-  generating_show_notes:  'Generating show notes',
-  detecting_chapters:     'Detecting chapters',
-  writing_cold_open:      'Writing cold open',
-  scoring_quality:        'Scoring quality',
-};
-const STEP_DESC = {
-  transcribing:          'Converting speech to text with word-level timestamps',
-  diarising:             'Separating who said what throughout the episode',
-  researching_guest:     'Pulling background context on your guest',
-  generating_show_notes: 'Structuring key moments, themes and quotable lines',
-  detecting_chapters:    'Finding topic shifts for chapter navigation',
-  writing_cold_open:     'Writing a 30-second spoken hook from the best moment',
-  scoring_quality:       'Rating information density, pacing and clarity',
-};
-
-let _file = null, _jobId = null, _timer = null, _coText = '', _startedAt = null, _results = null;
-
-// ─ Health check — update badge from real server state ──────────
-(async function initHealth() {
-  try {
-    const r = await fetch('/api/health');
-    if (!r.ok) return;
-    const d = await r.json();
-    const badge = document.getElementById('status-badge');
-    const dot   = document.getElementById('status-dot');
-    const text  = document.getElementById('status-text');
-    if (d.llm_provider !== 'local') {
-      badge.style.borderColor = 'rgba(56,189,248,.25)';
-      badge.style.background  = 'rgba(56,189,248,.05)';
-      dot.style.background    = 'var(--teal-sky)';
-      text.style.color        = 'var(--teal-sky)';
-      text.textContent        = 'CLOUD';
+  // Generate hero waveform bars
+  (function() {
+    const wf = document.getElementById('hero-waveform');
+    if (!wf) return;
+    const count = 80;
+    for (let i = 0; i < count; i++) {
+      const span = document.createElement('span');
+      // Pseudo-organic waveform: combine sine + noise
+      const t = i / count;
+      const base = Math.abs(Math.sin(t * Math.PI * 3.2)) * 0.6;
+      const noise = Math.random() * 0.4;
+      const h = Math.max(0.1, base + noise * (1 - Math.abs(t - 0.5) * 0.8));
+      span.style.height = (h * 100) + '%';
+      span.style.animationDelay = (i * 0.03) + 's';
+      span.style.animationDuration = (1.8 + Math.random() * 1.2) + 's';
+      wf.appendChild(span);
     }
-    // Append TTS status as a second pill if TTS is down
-    if (d.tts_backend !== 'ready') {
-      const warn = document.createElement('div');
-      warn.style.cssText = 'display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;border:1px solid rgba(245,158,11,.2);background:rgba(245,158,11,.05);margin-left:6px;';
-      warn.innerHTML = '<div style="width:5px;height:5px;border-radius:50%;background:var(--amber);"></div><span style="font-size:10.5px;color:var(--amber);font-weight:600;letter-spacing:.05em;">TTS OFF</span>';
-      document.querySelector('header .flex.items-center.justify-between, header > div > div').appendChild(warn);
-    }
-  } catch(e) {}
-})();
+  })();
 
-// ─ File ────────────────────────────────────────────────────────
-const dz = document.getElementById('dz');
-const fi = document.getElementById('fi');
-dz.addEventListener('click', () => fi.click());
-dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
-dz.addEventListener('dragleave', () => dz.classList.remove('over'));
-dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('over'); if(e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]); });
-fi.addEventListener('change', () => { if(fi.files[0]) setFile(fi.files[0]); });
-
-function setFile(f) {
-  _file = f;
-  _hideUploadErr();
-  document.getElementById('dz-idle').style.display = 'none';
-  document.getElementById('dz-sel').style.display  = 'block';
-  document.getElementById('dz-name').textContent   = f.name;
-  document.getElementById('dz-size').textContent   = (f.size/1024/1024).toFixed(1)+' MB';
-  const btn = document.getElementById('run-btn');
-  btn.disabled = false;
-  btn.style.opacity = '1';
-}
-
-// ─ Error helpers ───────────────────────────────────────────────
-function _showUploadErr(msg) {
-  const el = document.getElementById('upload-err');
-  document.getElementById('upload-err-msg').textContent = msg;
-  el.classList.add('visible');
-}
-function _hideUploadErr() {
-  document.getElementById('upload-err').classList.remove('visible');
-}
-function _showProcErr(msg) {
-  document.getElementById('proc-err-msg').textContent = msg || 'Unknown error. Check the server logs.';
-  document.getElementById('proc-err').classList.add('visible');
-  document.getElementById('p-label').textContent = 'Failed';
-  document.getElementById('p-label').style.color = 'var(--red)';
-}
-
-// ─ Go ──────────────────────────────────────────────────────────
-async function go() {
-  if (!_file) return;
-  const btn = document.getElementById('run-btn');
-  btn.disabled = true; btn.style.opacity = '.4'; btn.textContent = 'Uploading…';
-  _hideUploadErr();
-
-  const fd = new FormData();
-  fd.append('audio', _file);
-  const g = document.getElementById('guest').value.trim();
-  if (g) fd.append('guest_name', g);
-
-  try {
-    const r = await fetch('/api/process', { method:'POST', body:fd });
-    if (!r.ok) {
-      const e = await r.json();
-      _showUploadErr('Upload failed: ' + (e.detail || r.statusText));
-      _resetBtn();
-      return;
-    }
-    const d = await r.json();
-    _jobId = d.job_id;
-    _startedAt = Date.now();
-    document.getElementById('p-file').textContent = _file.name;
-    document.getElementById('p-elapsed').textContent = '';
-    document.getElementById('proc-err').classList.remove('visible');
-    document.getElementById('p-label').style.color = '';
-    _show('proc');
-    _timer = setInterval(_poll, 2000);
-  } catch(e) {
-    _showUploadErr('Network error: ' + e.message);
-    _resetBtn();
-  }
-}
-
-function _resetBtn() {
-  const b = document.getElementById('run-btn');
-  b.disabled = false; b.style.opacity = '1'; b.textContent = 'Analyse episode →';
-}
-
-// ─ Poll ────────────────────────────────────────────────────────
-async function _poll() {
-  if (!_jobId) return;
-  try {
-    const r = await fetch('/api/jobs/'+_jobId);
-    const j = await r.json();
-    _updateProc(j);
-    if (j.status==='done')   { clearInterval(_timer); _showResults(j.results); }
-    if (j.status==='failed') { clearInterval(_timer); _showProcErr(j.error); }
-  } catch(e) { console.error(e); }
-}
-
-// ─ Processing UI ───────────────────────────────────────────────
-function _updateProc(j) {
-  const label = STEP_LABELS[j.current_step] || (j.status==='done' ? 'Complete' : 'Processing…');
-  document.getElementById('p-label').textContent = label;
-  document.getElementById('p-bar').style.width   = (j.progress_pct||0)+'%';
-
-  if (_startedAt) {
-    const secs = Math.round((Date.now() - _startedAt) / 1000);
-    document.getElementById('p-elapsed').textContent = secs + 's elapsed';
-  }
-
-  // Hide researching_guest row when no guest (steps_total < 7 means it was skipped)
-  const skipGuest = j.steps_total < 7;
-  const visibleSteps = Object.entries(STEP_LABELS).filter(([k]) =>
-    !(k === 'researching_guest' && skipGuest)
-  );
-
-  document.getElementById('p-stages').innerHTML = visibleSteps.map(([k,lbl]) => {
-    const done   = j.steps_completed.includes(k);
-    const active = j.current_step === k;
-    return `<div class="stage-row ${done?'done':active?'active':'pending'}" style="${done?'opacity:.4':''}">
-      <div style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">
-        ${done
-          ? `<svg style="width:13px;height:13px;color:var(--green);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>`
-          : active
-          ? `<div style="width:7px;height:7px;border-radius:50%;background:var(--teal);" class="blink"></div>`
-          : `<div style="width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.12);"></div>`
-        }
-      </div>
-      <div>
-        <div style="font-size:13px;font-weight:${active?600:400};color:${active?'var(--t1)':'var(--t2)'};">${lbl}</div>
-        ${active ? `<div style="font-size:11px;color:var(--t3);margin-top:2px;">${STEP_DESC[k]||''}</div>` : ''}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-// ─ Sections ────────────────────────────────────────────────────
-function _show(name) {
-  document.getElementById('s-upload').style.display = name==='upload' ? 'flex'  : 'none';
-  document.getElementById('s-proc').style.display   = name==='proc'  ? 'flex'  : 'none';
-  document.getElementById('s-res').style.display    = name==='res'   ? 'block' : 'none';
-}
-
-function reset() {
-  clearInterval(_timer);
-  _file = null; _jobId = null; _startedAt = null; _results = null; _coText = '';
-  fi.value = '';
-  document.getElementById('guest').value = '';
-  document.getElementById('dz-idle').style.display = 'block';
-  document.getElementById('dz-sel').style.display  = 'none';
-  document.getElementById('p-label').style.color = '';
-  document.getElementById('proc-err').classList.remove('visible');
-  _hideUploadErr();
-  const b = document.getElementById('run-btn');
-  b.disabled = true; b.style.opacity = '.25'; b.textContent = 'Analyse episode →';
-  _show('upload');
-}
-
-// ─ Tabs ────────────────────────────────────────────────────────
-function tab(name, btn) {
-  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-pill').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
-  if (btn) btn.classList.add('active');
-}
-
-function _activateTab(name) {
-  const btn = document.querySelector(`.tab-pill[data-tab="${name}"]`);
-  tab(name, btn);
-}
-
-// ─ Results ─────────────────────────────────────────────────────
-function _showResults(r) {
-  _results = r;
-  _show('res');
-  document.getElementById('s-res').classList.add('fade-up');
-
-  const sn  = r.show_notes || {};
-  const dur = r.transcription?.duration;
-  const spk = r.transcript?.speaker_count;
-  const lng = r.transcription?.language;
-
-  document.getElementById('r-title').textContent = sn.title || 'Episode Analysis';
-
-  const chips = [];
-  if (dur) chips.push(_chip(Math.round(dur/60)+' min'));
-  if (spk) chips.push(_chip(spk+' speaker'+(spk!==1?'s':'')));
-  if (lng) chips.push(_chip(lng.toUpperCase()));
-  document.getElementById('r-meta').innerHTML = chips.join('');
-
-  _renderCO(r.cold_open||{});
-  _renderQS(r.quality_score||{});
-  _renderSN(sn, r.guest_research);
-  _renderCH(r.chapters||[]);
-  _renderTX(r.transcript||{});
-
-  // Auto-land on Cold Open — it's the wow moment
-  _activateTab('cold-open');
-}
-
-function _chip(t) {
-  return `<span style="font-size:11px;color:var(--t3);padding:2px 7px;border-radius:4px;background:rgba(255,255,255,.05);font-family:'JetBrains Mono',monospace;">${_esc(String(t))}</span>`;
-}
-
-// ─ Copy & Export ───────────────────────────────────────────────
-async function _copy(text, btn) {
-  try {
-    await navigator.clipboard.writeText(text);
-  } catch(e) {
-    // Fallback for non-https/localhost
-    const ta = document.createElement('textarea');
-    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta);
-  }
-  const orig = btn.textContent;
-  btn.textContent = 'Copied!'; btn.style.color = 'var(--green)';
-  setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1500);
-}
-
-function _exportAll() {
-  if (!_results) return;
-  const r = _results;
-  const sn = r.show_notes || {};
-  const title = sn.title || document.getElementById('r-title').textContent || 'Episode Analysis';
-  const lines = [];
-
-  lines.push(`# ${title}\n`);
-
-  if (_coText) {
-    lines.push(`## Cold Open Script\n${_coText}\n`);
-  }
-
-  if (r.quality_score?.overall !== undefined) {
-    const qs = r.quality_score;
-    lines.push(`## Quality Score: ${qs.overall}/10`);
-    if (qs.top_strength)    lines.push(`Strength: ${qs.top_strength}`);
-    if (qs.top_improvement) lines.push(`Improve:  ${qs.top_improvement}`);
-    if (qs.scores) {
-      Object.entries(qs.scores).forEach(([k,v]) => lines.push(`  ${k}: ${v}/10`));
-    }
-    lines.push('');
-  }
-
-  if (sn.description) {
-    lines.push(`## Show Notes\n${sn.description}\n`);
-  }
-  if ((sn.key_themes||[]).length) {
-    lines.push(`Themes: ${sn.key_themes.join(', ')}\n`);
-  }
-  if ((sn.notable_moments||[]).length) {
-    lines.push('### Notable Moments');
-    sn.notable_moments.forEach(m => lines.push(`${m.timestamp}  ${m.description}`));
-    lines.push('');
-  }
-  if ((sn.quotable_moments||[]).length) {
-    lines.push('### Quotes');
-    sn.quotable_moments.forEach(q => lines.push(`"${q.quote}" — ${q.timestamp}`));
-    lines.push('');
-  }
-
-  const chs = r.chapters || [];
-  if (chs.length) {
-    lines.push('## Chapters');
-    chs.forEach((c,i) => lines.push(`${String(i+1).padStart(2,'0')}. [${c.timestamp_display}] ${c.title} — ${c.summary}`));
-    lines.push('');
-  }
-
-  const txLines = r.transcript?.lines || [];
-  if (txLines.length) {
-    lines.push('## Transcript');
-    txLines.forEach(l => lines.push(`${l.timestamp}  ${l.speaker}  ${l.text}`));
-  }
-
-  const blob = new Blob([lines.join('\n')], {type:'text/plain;charset=utf-8'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = title.replace(/[^a-z0-9]/gi,'_').toLowerCase() + '.txt';
-  a.click();
-}
-
-// ─ Show Notes ──────────────────────────────────────────────────
-function _getSnText() {
-  const sn = (_results||{}).show_notes || {};
-  const parts = [];
-  if (sn.title)       parts.push(sn.title);
-  if (sn.description) parts.push('\n'+sn.description);
-  if ((sn.key_themes||[]).length) parts.push('\nThemes: '+sn.key_themes.join(', '));
-  if ((sn.notable_moments||[]).length) {
-    parts.push('\nNotable Moments:');
-    sn.notable_moments.forEach(m => parts.push(`${m.timestamp}  ${m.description}`));
-  }
-  if ((sn.quotable_moments||[]).length) {
-    parts.push('\nQuotes:');
-    sn.quotable_moments.forEach(q => parts.push(`"${q.quote}" — ${q.timestamp}`));
-  }
-  return parts.join('\n');
-}
-
-function _renderSN(sn, guest) {
-  const el = document.getElementById('sn');
-  if (!sn.title) { el.innerHTML = _empty('No show notes generated.'); return; }
-
-  const themes = (sn.key_themes||[]).map(t =>
-    `<span style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 9px;border-radius:4px;background:rgba(10,126,164,.09);color:var(--teal);border:1px solid rgba(10,126,164,.2);">${_esc(t)}</span>`
-  ).join('');
-
-  const guestHtml = (guest?.found)
-    ? `<div style="padding:14px 16px;border-radius:9px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);margin-bottom:28px;">
-        <div style="font-size:10px;letter-spacing:.08em;color:var(--teal);font-weight:700;margin-bottom:5px;">GUEST CONTEXT</div>
-        <p style="font-size:13px;color:var(--t2);line-height:1.68;">${_esc(guest.summary)}</p>
-      </div>` : '';
-
-  const moments = (sn.notable_moments||[]).map(m =>
-    `<div style="display:grid;grid-template-columns:50px 1fr;gap:10px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.04);">
-      <span class="mono">${_esc(m.timestamp)}</span>
-      <span style="font-size:13.5px;color:var(--t2);line-height:1.58;">${_esc(m.description)}</span>
-    </div>`
-  ).join('');
-
-  const quotes = (sn.quotable_moments||[]).map(q =>
-    `<div class="pull-quote" style="margin:14px 0;border-radius:0 8px 8px 0;">
-      <p style="font-size:15.5px;color:var(--t1);line-height:1.7;font-style:italic;margin-bottom:9px;padding-top:6px;">${_esc(q.quote)}</p>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span class="mono">${_esc(q.timestamp)}</span>
-        <span style="font-size:11.5px;color:var(--t3);">${_esc(q.context)}</span>
-      </div>
-    </div>`
-  ).join('');
-
-  el.innerHTML = `
-    <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
-      <button class="copy-btn" onclick="_copy(_getSnText(),this)">Copy</button>
-    </div>
-    ${guestHtml}
-    <p style="font-size:15.5px;color:var(--t2);line-height:1.78;margin-bottom:22px;">${_esc(sn.description||'')}</p>
-    ${themes ? `<div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:28px;">${themes}</div>` : ''}
-    ${moments ? `<div style="margin-bottom:28px;">
-      <div style="font-size:10px;letter-spacing:.08em;color:var(--t3);font-weight:700;margin-bottom:10px;">NOTABLE MOMENTS</div>
-      ${moments}
-    </div>` : ''}
-    ${quotes ? `<div>
-      <div style="font-size:10px;letter-spacing:.08em;color:var(--t3);font-weight:700;margin-bottom:10px;">QUOTABLE</div>
-      ${quotes}
-    </div>` : ''}
-  `;
-}
-
-// ─ Chapters ────────────────────────────────────────────────────
-function _getChText() {
-  return ((_results||{}).chapters||[])
-    .map((c,i) => `${String(i+1).padStart(2,'0')}. [${c.timestamp_display}] ${c.title}\n    ${c.summary}`)
-    .join('\n\n');
-}
-
-function _renderCH(chs) {
-  const el = document.getElementById('ch');
-  if (!chs.length) { el.innerHTML = _empty('No chapters detected.'); return; }
-  el.innerHTML = `
-    <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
-      <button class="copy-btn" onclick="_copy(_getChText(),this)">Copy</button>
-    </div>` +
-  chs.map((c,i) => `
-    <div class="ch-row">
-      <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
-        <div style="width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t3);font-family:'JetBrains Mono',monospace;">${String(i+1).padStart(2,'0')}</div>
-        <span class="mono" style="font-size:10px;">${_esc(c.timestamp_display)}</span>
-      </div>
-      <div>
-        <p style="font-weight:600;font-size:14.5px;letter-spacing:-.01em;margin-bottom:4px;">${_esc(c.title)}</p>
-        <p style="font-size:12.5px;color:var(--t3);line-height:1.6;">${_esc(c.summary)}</p>
-      </div>
-    </div>`).join('');
-}
-
-// ─ Cold Open ───────────────────────────────────────────────────
-function _renderCO(co) {
-  const el = document.getElementById('co');
-  if (!co.cold_open) { el.innerHTML = _empty('No cold open generated.'); return; }
-  _coText = co.cold_open;
-
-  el.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
-      <div>
-        <div style="font-size:10px;letter-spacing:.08em;color:var(--t3);font-weight:700;margin-bottom:3px;">COLD OPEN SCRIPT</div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span style="font-size:12px;color:var(--t3);">${_esc(String(co.estimated_words||'~75'))} words · ~30 sec</span>
-          ${co.hook_moment?`<span class="mono">Hook at ${_esc(co.hook_moment)}</span>`:''}
-        </div>
-      </div>
-      <button class="copy-btn" onclick="_copy(_coText,this)">Copy</button>
-    </div>
-
-    <div class="script-stage" style="padding:38px 32px;margin-bottom:18px;">
-      <p style="font-size:18px;line-height:1.82;color:var(--t1);position:relative;z-index:1;letter-spacing:-.01em;">&#8220;${_esc(co.cold_open)}&#8221;</p>
-    </div>
-
-    <div id="co-synth">
-      <button id="co-synth-btn" onclick="_synthCO()"
-        style="display:inline-flex;align-items:center;gap:7px;padding:9px 16px;background:rgba(10,126,164,.12);border:1px solid rgba(10,126,164,.28);border-radius:8px;color:var(--teal-sky);font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit;transition:opacity .15s;">
-        <svg style="width:13px;height:13px;" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"/>
-        </svg>
-        Hear it in AI voice
-      </button>
-      <p style="font-size:11px;color:var(--t3);margin-top:7px;">Requires Chatterbox TTS server running on port 8004</p>
-      <div id="co-synth-err" style="display:none;font-size:12px;color:var(--amber);margin-top:6px;"></div>
-      <audio id="co-audio" style="display:none;width:100%;margin-top:12px;" controls></audio>
-    </div>
-  `;
-}
-
-async function _synthCO() {
-  const btn = document.getElementById('co-synth-btn');
-  if (!btn) return;
-  btn.disabled = true;
-  btn.style.opacity = '.4';
-  btn.innerHTML = `<svg style="width:13px;height:13px;animation:spin .8s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Synthesising…`;
-
-  // Add spin keyframe if not present
-  if (!document.getElementById('spin-style')) {
-    const s = document.createElement('style');
-    s.id = 'spin-style';
-    s.textContent = '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}';
-    document.head.appendChild(s);
-  }
-
-  try {
-    const r = await fetch('/api/synthesize', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({text:_coText})
-    });
-    if (!r.ok) {
-      const e = await r.json();
-      document.getElementById('co-synth-err').textContent = e.detail || 'Synthesis failed';
-      document.getElementById('co-synth-err').style.display = 'block';
-      btn.disabled = false; btn.style.opacity = '1';
-      btn.innerHTML = `<svg style="width:13px;height:13px;" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"/></svg> Hear it in AI voice`;
-      return;
-    }
-    const blob = await r.blob();
-    const aud = document.getElementById('co-audio');
-    aud.src = URL.createObjectURL(blob);
-    aud.style.display = 'block';
-    aud.play();
-    btn.style.display = 'none';
-  } catch(e) {
-    document.getElementById('co-synth-err').textContent = e.message;
-    document.getElementById('co-synth-err').style.display = 'block';
-    btn.disabled = false; btn.style.opacity = '1';
-  }
-}
-
-// ─ Quality ─────────────────────────────────────────────────────
-function _getQsText() {
-  const qs = (_results||{}).quality_score || {};
-  const LABS = { information_density:'Information Density', pacing:'Pacing', clarity:'Clarity', memorable_moments:'Memorable Moments' };
-  const parts = [`Quality Score: ${qs.overall||'?'}/10`];
-  if (qs.scores) Object.entries(qs.scores).forEach(([k,v]) => parts.push(`  ${LABS[k]||k}: ${v}/10`));
-  if (qs.top_strength)    parts.push(`\nStrength: ${qs.top_strength}`);
-  if (qs.top_improvement) parts.push(`Improve:  ${qs.top_improvement}`);
-  if ((qs.flags||[]).length) {
-    parts.push('\nFlagged Segments:');
-    qs.flags.forEach(f => parts.push(`  ${f.timestamp} [${f.severity}] ${f.issue}${f.suggestion?' → '+f.suggestion:''}`));
-  }
-  return parts.join('\n');
-}
-
-function _renderQS(qs) {
-  const el = document.getElementById('qs');
-  if (!qs.scores) { el.innerHTML = _empty('No quality score generated.'); return; }
-
-  const col = s => s>=8?'var(--green)':s>=6?'var(--teal-sky)':s>=4?'var(--amber)':'var(--red)';
-  const LABS = { information_density:'Information Density', pacing:'Pacing', clarity:'Clarity', memorable_moments:'Memorable Moments' };
-
-  // Render bars at 0 width — animate to actual width after paint
-  const barEntries = Object.entries(qs.scores||{});
-  const bars = barEntries.map(([k,v]) => `
-    <div style="margin-bottom:15px;">
-      <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
-        <span style="font-size:13px;color:var(--t2);">${LABS[k]||k}</span>
-        <span style="font-size:13px;font-weight:700;color:${col(v)};font-family:'JetBrains Mono',monospace;">${v}</span>
-      </div>
-      <div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;">
-        <div class="sbar" data-target="${v*10}" style="width:0%;background:${col(v)};"></div>
-      </div>
-    </div>`).join('');
-
-  const flags = (qs.flags||[]).map(f => `
-    <div class="flag-card ${_esc(f.severity)}">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-        <span class="mono">${_esc(f.timestamp)}</span>
-        ${f.duration_seconds?`<span style="font-size:10.5px;color:var(--t3);">${_esc(String(f.duration_seconds))}s</span>`:''}
-        <span style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:${f.severity==='high'?'var(--red)':f.severity==='medium'?'var(--amber)':'var(--green)'};">${_esc(f.severity)}</span>
-      </div>
-      <p style="font-size:13px;color:var(--t2);${f.suggestion?'margin-bottom:3px;':''}">${_esc(f.issue)}</p>
-      ${f.suggestion?`<p style="font-size:11.5px;color:var(--t3);font-style:italic;">→ ${_esc(f.suggestion)}</p>`:''}
-    </div>`).join('');
-
-  el.innerHTML = `
-    <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
-      <button class="copy-btn" onclick="_copy(_getQsText(),this)">Copy</button>
-    </div>
-    <div style="display:flex;align-items:center;gap:18px;margin-bottom:32px;padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.06);">
-      <div style="font-size:68px;font-weight:900;letter-spacing:-.04em;line-height:1;color:${col(qs.overall||0)};">${qs.overall||'—'}</div>
-      <div>
-        <div style="font-size:12px;color:var(--t3);margin-bottom:2px;">Overall / 10</div>
-        ${qs.top_strength?`<p style="font-size:12px;color:var(--green);margin-top:7px;line-height:1.5;">↑ ${_esc(qs.top_strength)}</p>`:''}
-        ${qs.top_improvement?`<p style="font-size:12px;color:var(--amber);margin-top:4px;line-height:1.5;">↗ ${_esc(qs.top_improvement)}</p>`:''}
-      </div>
-    </div>
-    <div style="margin-bottom:28px;">${bars}</div>
-    ${flags?`<div>
-      <div style="font-size:10px;letter-spacing:.08em;color:var(--t3);font-weight:700;margin-bottom:10px;">FLAGGED SEGMENTS</div>
-      ${flags}
-    </div>`:''}
-  `;
-
-  // Animate score bars after paint — start from 0 so CSS transition fires
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      document.querySelectorAll('.sbar[data-target]').forEach(bar => {
-        bar.style.width = bar.dataset.target + '%';
-      });
-    });
-  });
-}
-
-// ─ Transcript ──────────────────────────────────────────────────
-function _getTxText() {
-  return ((_results||{}).transcript?.lines||[])
-    .map(l => `${l.timestamp}  ${l.speaker}  ${l.text}`)
-    .join('\n');
-}
-
-function _renderTX(t) {
-  const el = document.getElementById('tx');
-  const lines = t.lines||[];
-  if (!lines.length) { el.innerHTML = _empty('No transcript available.'); return; }
-
-  const spkMap = {}; let ci = 0;
-  const spkCls = ['spk0','spk1','spk2'];
-
-  el.innerHTML = `
-    <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
-      <button class="copy-btn" onclick="_copy(_getTxText(),this)">Copy</button>
-    </div>` +
-  lines.map(l => {
-    if (!spkMap[l.speaker]) spkMap[l.speaker] = spkCls[ci++ % spkCls.length];
-    return `<div class="tx-row">
-      <span class="mono">${_esc(l.timestamp)}</span>
-      <span class="${spkMap[l.speaker]}" style="font-size:10.5px;font-weight:600;font-family:'JetBrains Mono',monospace;letter-spacing:.03em;">${_esc(l.speaker)}</span>
-      <span style="font-size:13.5px;color:var(--t2);line-height:1.62;">${_esc(l.text)}</span>
-    </div>`;
-  }).join('');
-}
-
-// ─ Utilities ───────────────────────────────────────────────────
-function _esc(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
-}
-
-function _empty(msg) {
-  return `<div style="display:flex;flex-direction:column;align-items:center;padding:48px 0;gap:10px;">
-    <svg style="width:28px;height:28px;color:var(--t3);opacity:.4;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-    </svg>
-    <p style="font-size:13px;color:var(--t3);">${msg}</p>
-  </div>`;
-}
-
+  // Dynamic health badge
+  (async function() {
+    try {
+      const r = await fetch('/api/health');
+      if (!r.ok) return;
+      const d = await r.json();
+      const text = document.getElementById('status-text');
+      const dot  = document.getElementById('status-dot');
+      const badge = document.getElementById('status-badge');
+      if (!text) return;
+      if (d.llm_provider !== 'local') {
+        text.textContent = 'CLOUD';
+        if (dot)   { dot.style.background = 'var(--teal-sky)'; dot.style.boxShadow = '0 0 8px var(--teal-sky)'; }
+        if (badge) { badge.style.color = 'var(--teal-sky)'; }
+      }
+    } catch(e) {}
+  })();
 </script>
 </body>
 </html>
