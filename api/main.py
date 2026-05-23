@@ -15,6 +15,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Optional
 
+import httpx
 import requests as _requests
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -210,12 +211,12 @@ async def synthesize_cold_open(body: dict):
 
     try:
         resp = _requests.post(
-            f"{chatterbox_url}/v1/audio/speech",
+            f"{chatterbox_url}/tts",
             json={
-                "model": "chatterbox",
-                "input": text,
-                "voice": "default",
-                "response_format": "wav",
+                "text": text,
+                "voice_mode": "predefined",
+                "predefined_voice_id": "Emily.wav",
+                "output_format": "wav",
             },
             timeout=120,
         )
@@ -244,9 +245,10 @@ async def health():
     chatterbox_url = os.environ.get("CHATTERBOX_URL", "http://localhost:8004")
     tts_status = "unavailable"
     try:
-        r = _requests.get(f"{chatterbox_url}/api/model-info", timeout=3)
-        if r.status_code == 200 and r.json().get("loaded"):
-            tts_status = "ready"
+        async with httpx.AsyncClient(timeout=3) as client:
+            r = await client.get(f"{chatterbox_url}/api/model-info")
+            if r.status_code == 200 and r.json().get("loaded"):
+                tts_status = "ready"
     except Exception:
         pass
 
