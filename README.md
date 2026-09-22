@@ -4,7 +4,7 @@ A backend that turns raw podcast or briefing audio into structured content: a sp
 
 ## Who it was for
 
-Built for a New Zealand health-sector organisation, delivered May 2026. The client is not named here, at their request.
+Built in 2026 for health-sector teams in New Zealand, where the compliance constraint below rules out the mainstream audio tools.
 
 Health organisations produce a lot of written content that goes unread: clinical guidelines, patient education material, staff briefings. Audio is more accessible, but most cloud audio tools (transcription, editing, voice tools) send the recording to an external server. Under the NZ Health Information Privacy Code 2020, a voice recording is biometric health information, so that is a real compliance problem, not a hypothetical one. This pipeline runs the audio-handling stages on the client's own hardware, so a recorded clinical briefing can be turned into a timestamped, navigable piece of content without the recording leaving the building.
 
