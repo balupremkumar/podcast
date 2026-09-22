@@ -27,6 +27,9 @@ model_cache/
 
 # Private recordings
 voice_samples/
+*.wav
+*.mp3
+*.m4a
 
 # OS
 .DS_Store
